@@ -109,9 +109,12 @@ function button(text, action, cls = "") {
 }
 const intro = (k, t, p) =>
   `<div class="page-intro"><div class="eyebrow">${k}</div><h1>${t}</h1><p>${p}</p></div>`;
+function phoneStatus() {
+  return `<div class="phone-status" aria-hidden="true"><span>9:41</span><span class="phone-island"></span><span class="phone-signal">▮▮▮ <i></i></span></div>`;
+}
 function home() {
-  const completed = Object.keys(saved.results).length,
-    today = scenarios[dailySeed() % scenarios.length];
+  const completed = Object.keys(saved.results).length;
+  const today = scenarios[dailySeed() % scenarios.length];
   const list = scenarios.filter(
     (s) =>
       filter === "全部" ||
@@ -119,22 +122,36 @@ function home() {
       (filter === "未完成" && !saved.results[s.id]),
   );
   const cards = saved.mode === "challenge" ? shuffled(list, dailySeed()) : list;
-  return `<section class="hero"><div><div class="eyebrow">UNSCAM LAB / 3.0</div><h1>骗局可以重来，<br><em>生活不必交学费。</em></h1><p>一条消息，一个选择。<br>在可以犯错的故事里，练习核实、判断和及时停下。</p><div class="row hero-actions">${button("开始今日一局 ↗", "start:" + today.id, "primary")}${saved.session && !saved.session.ended ? button("继续上次练习 →", "resume") : ""}<a class="button" href="#guide">先学三个动作</a></div><span class="quiet">16 个新版情境 · 373 篇全文 · 本地模式不上传输入</span></div><div class="scene-art" aria-label="模拟消息与独立核实的选择"><div class="floating-card"><div class="card-cap"><span>一条新消息</span><span>刚刚</span></div><p>“这笔退款已经准备好了，<br>我们先核对一下账户……”</p></div><div class="floating-card"><div class="card-cap"><span>你的选择</span><span>↗</span></div><p>先停一下。<br>我从自己找到的入口查一查。</p></div><div class="stamp">保持清醒<br>慢一点也好</div></div></section>
- <section class="learning-shortcut"><div><span class="eyebrow">THE COMPLETE COLLECTION</span><h2>原作内容，完整收录。</h2><p>全文知识库 · 45 项自查 · 经典闯关 · 12 个推理谜题 · 离线资料</p></div><a class="button primary" href="#learn">打开学习地图 ↗</a></section>
- <section class="stats" aria-label="训练概况"><div class="stat"><b>${scenarios.length}</b><span>个生活情境</span></div><div class="stat"><b>${Object.keys(saved.mistakes).length}</b><span>个待巩固场景</span></div><div class="stat"><b>${String(completed).padStart(2, "0")}</b><span>个已完成故事</span></div></section>
- <div class="section-head"><div><div class="eyebrow">THE PRACTICE ROOM</div><h2>不是每条消息，都是骗局。</h2></div><a class="quiet" href="#review">查看我的成长 ↗</a></div><p class="hint">16 个故事混合风险情境与正常业务。目标是找出可靠依据，而不是一律拒绝。</p>
- <div class="mode-switch" role="group" aria-label="练习模式">${button("陪练模式 · 可查看提示", "mode:learn", saved.mode === "learn" ? "primary" : "")}${button("挑战模式 · 结束后看解析", "mode:challenge", saved.mode === "challenge" ? "primary" : "")}</div>
- <div class="filters">${["全部", "入门", "进阶", "未完成"].map((x) => button(x, "filter:" + x, "chip " + (filter === x ? "selected" : ""))).join("")}</div>
- <section class="grid">${
-   cards
-     .map((s) => {
-       const i = scenarios.indexOf(s);
-       return `<article class="case"><div class="case-art" aria-hidden="true"><span class="art-number">CASE ${String(i + 1).padStart(2, "0")}</span><span class="art-icon">${["↗", "¥", "☎", "▤", "%", "§", "＋", "♡", "⌘", "✳", "✉", "↺", "▣", "⌂", "↔", "◷"][i]}</span></div><div class="case-body"><div class="case-meta"><span>${saved.mode === "challenge" ? "生活情境" : esc(s.category)}</span><span>· ${s.minutes} 分钟</span><span>${saved.results[s.id] ? "已练习 ✓" : s.level}</span></div><h3>${saved.mode === "challenge" ? "未知情境 " + String(i + 1).padStart(2, "0") : esc(s.title)}</h3><p>${saved.mode === "challenge" ? "进入故事，收集信息，再决定下一步。" : esc(s.desc)}</p><div class="case-bottom"><span>${saved.results[s.id]?.endings?.length || 0} 种结局已探索</span>${button("进入故事 →", "start:" + s.id)}</div></div></article>`;
-     })
-     .join("") ||
-   '<div class="empty">已完成这一组，试试另一种选择或挑战模式。</div>'
- }</section>
- <div class="notice">练习分不等于真实防骗能力。结束后的迁移题和下一次独立核实，才更值得关注。</div>`;
+  const continuing = saved.session && !saved.session.ended;
+  return `<div class="phone-stage inbox-stage">
+    <section class="phone-intro">
+      <div class="eyebrow">UNSCAM LAB · 模拟手机</div>
+      <h1>你收到了一条<br><em>新消息。</em></h1>
+      <p class="phone-lead">熟悉的聊天窗口，意想不到的下一句。<br>点开一段对话，看看你会怎么回应。</p>
+      <div class="phone-start">${continuing ? button("继续上次对话 →", "resume", "primary") : button("打开今日消息 →", "start:" + today.id, "primary")}<span class="quiet">每段约 3–5 分钟 · 进度自动保存</span></div>
+      <div class="phone-progress"><span><b>${String(completed).padStart(2, "0")}</b> / ${scenarios.length} 段对话已完成</span><a href="#review">查看复盘 ↗</a></div>
+      <p class="phone-footnote">不是每条消息都有问题。先聊一聊、找依据，再做决定。在这里，选错也可以重来。</p>
+      <div class="phone-extras"><a href="#classic:chat"><span>↳</span><div><strong>想玩原来的版本？</strong><small>打开原版聊天闯关</small></div><span>↗</span></a><a href="#learn"><span>▤</span><div><strong>聊完，再多学一点</strong><small>373 篇全文 · 自查 · 推理 · 下载</small></div><span>↗</span></a><a href="#settings"><span>✳</span><div><strong>${aiEnabled && config.enabled ? "AI 陪练已开启" : "基础版已就绪"}</strong><small>${aiEnabled && config.enabled ? "管理模型与临时 API Key" : "无需 API Key，也可接入 AI 自由追问"}</small></div><span>↗</span></a></div>
+    </section>
+    <section class="phone-device inbox-phone" aria-label="模拟手机收件箱">
+      ${phoneStatus()}
+      <div class="inbox-heading"><div><span class="phone-kicker">模拟收件箱</span><h2>信息<span>${scenarios.length}</span></h2></div><span class="sms-icon" aria-hidden="true">✉</span></div>
+      <div class="phone-modes" role="group" aria-label="练习模式"><button data-action="mode:learn" aria-pressed="${saved.mode === "learn"}">陪练<span>随时看提示</span></button><button data-action="mode:challenge" aria-pressed="${saved.mode === "challenge"}">挑战<span>结束后揭晓</span></button></div>
+      <div class="filters inbox-filters" role="group" aria-label="筛选对话">${["全部", "入门", "进阶", "未完成"].map((x) => `<button class="chip ${filter === x ? "selected" : ""}" data-action="filter:${x}" aria-pressed="${filter === x}">${x}</button>`).join("")}</div>
+      <div class="inbox-list" tabindex="0" aria-label="对话列表，可滚动查看全部情境">${
+        cards
+          .map((s) => {
+            const i = scenarios.indexOf(s);
+            const active = continuing && saved.session.id === s.id;
+            const done = !!saved.results[s.id];
+            return `<article class="case inbox-item"><button class="message-row" data-action="start:${s.id}" aria-label="${esc(s.actor)}，${active ? "继续对话" : done ? "再次体验" : "打开消息"}"><span class="contact-avatar contact-${i % 4}" aria-hidden="true">${esc(s.actor[0])}</span><span class="case-body"><span class="message-top"><strong>${esc(s.actor)}</strong><small>${active ? "进行中" : done ? "已完成" : "新消息"}</small></span><span class="message-preview">${esc(active ? s.nodes[saved.session.node].text : s.nodes.start.text)}</span><span class="message-note">${saved.mode === "challenge" ? "未知情境 " + String(i + 1).padStart(2, "0") : esc(s.category)} · ${s.minutes} 分钟${active ? " · 继续对话" : done ? " · " + saved.results[s.id].endings.length + " 种结局" : ""}</span></span><span class="message-indicator" aria-hidden="true">${active ? "↩" : done ? "✓" : "●"}</span></button></article>`;
+          })
+          .join("") ||
+        '<div class="empty">这组对话已经完成，试试其他情境。</div>'
+      }</div>
+      <div class="phone-bottom"><span>虚构联系人 · 所有操作仅为模拟</span><div class="home-indicator" aria-hidden="true"></div></div>
+    </section>
+  </div>`;
 }
 function start(id, confirmed = false) {
   if (!scenarios.some((s) => s.id === id)) return;
@@ -159,36 +176,49 @@ function start(id, confirmed = false) {
 }
 function play() {
   if (!session)
-    return `<div class="empty"><h1>选择一个故事开始</h1><a class="button primary" href="#home">回到练习场</a></div>`;
+    return `<div class="empty"><h1>打开一条消息开始</h1><a class="button primary" href="#home">回到收件箱</a></div>`;
   const s = scenarios.find((s) => s.id === session.id);
   if (session.ended) return result(s);
-  const node = s.nodes[session.node],
-    clues = visibleClues(s),
-    history = session.history
-      .map(
-        (h) =>
-          `<div class="bubble"><small>第 ${session.history.indexOf(h) + 1} 幕 · 剧情</small>${esc(s.nodes[h.node].text)}</div><div class="bubble mine">${esc(h.label)}</div>`,
-      )
-      .join("");
+  const node = s.nodes[session.node];
+  const clues = visibleClues(s);
+  const history = session.history
+    .map(
+      (h, i) =>
+        `<div class="message-time">第 ${i + 1} 幕</div><div class="bubble"><small>${h.node === "verify" ? "核实结果" : "剧情消息"}</small>${esc(s.nodes[h.node].text)}</div><div class="bubble mine"><small>你的回复 / 行动</small>${esc(h.label)}</div>`,
+    )
+    .join("");
   const choices = shuffled(node.choices, session.seed + session.history.length);
-  return `<div class="section-head"><div><div class="eyebrow">CASE ${String(scenarios.indexOf(s) + 1).padStart(2, "0")} / ${session.mode === "challenge" ? "挑战模式" : "陪练模式"}</div><h1 class="game-title">${session.mode === "challenge" ? "一段待你判断的对话" : esc(s.title)}</h1></div><a class="quiet" href="#home">保存并离开 ↗</a></div><p class="hint">${esc(s.desc)} 所有金额和操作均为虚构。</p>
- <div class="game-layout"><section class="panel chat-panel"><div class="chat-head"><div class="row"><span class="avatar">${esc(s.actor[0])}</span><div>${esc(s.actor)}<small>剧情角色 · 非真实联系人</small></div></div><span class="tag">第 ${session.history.length + 1} 幕</span></div>
- <div class="chat-log" role="log" aria-label="剧情对话">${history}<div class="bubble current"><small>当前消息</small>${esc(node.text)}</div>${chatMessages
-   .filter((m) => m.node === session.node)
-   .map(
-     (m) =>
-       `<div class="bubble ${m.role === "user" ? "mine" : m.generated ? "ai" : "local"}"><small>${m.role === "user" ? "你的追问" : m.generated ? "AI 生成 · 仅供练习" : "本地陪练提示"}</small>${esc(m.content)}</div>`,
-   )
-   .join(
-     "",
-   )}${aiBusy ? '<p class="hint" role="status">正在等待回复… ' + button("取消等待", "cancel-chat", "text") + "</p>" : ""}</div>
- ${suggested ? `<div class="notice">AI 理解你想做：${esc(node.choices.find((c) => c.id === suggested)?.text)}。<br>${button("确认采用这个行动", "choose:" + suggested, "primary")}<span class="quiet"> 也可以选择下面其他行动。</span></div>` : ""}
- <div class="choices" aria-label="选择你的下一步">${choices.map((c, i) => `<button data-action="choose:${c.id}"><b>${String.fromCharCode(65 + i)}</b>${esc(c.text)}</button>`).join("")}</div>
- <details id="chat-details" ${chatOpen ? "open" : ""}><summary>想自己说一句？${aiEnabled && config.enabled ? "AI 对话" : "本地陪练"}</summary><p class="hint">${aiEnabled && config.enabled ? "当前场景、最近 6 条对话和这次输入会发送给 " + esc(config.provider) + "。不要输入真实个人信息。" : "本地陪练不上传输入。要获得更灵活的多轮回复，可在设置中启用 AI。"}</p>
- <div class="row followups">${(followups.length ? followups : ["我可以通过什么渠道核实？", "这条消息还缺什么证据？"]).map((t, i) => button(esc(t), "followup:" + i, "chip")).join("")}</div>
- <form id="chat-form" class="compose"><textarea id="message" aria-label="你的回复" placeholder="描述你想问什么或接下来想怎么做…" maxlength="600" required ${aiBusy ? "disabled" : ""}></textarea><button class="primary" ${aiBusy ? "disabled" : ""}>发送</button></form><p class="quiet">回复不会自动付款或推进剧情，需要你确认行动。每局最多 8 次 AI 追问。</p></details></section>
- <aside class="game-aside"><section class="panel"><div class="aside-title">你的安全边界</div><strong>${fmt(session.money)}</strong><span class="quiet"> 模拟余额</span><div class="meter"><progress value="${session.money}" max="10000" aria-label="模拟余额"></progress></div><strong>${session.privacy}%</strong><span class="quiet"> 账户控制</span><div class="meter"><progress value="${session.privacy}" max="100" aria-label="账户控制"></progress></div><p class="hint">随时可以暂停。不必为了已经投入的时间或资金继续。</p></section>
- <section class="panel"><div class="aside-title">已出现的线索 · ${clues.length} 条</div>${clues.map((c) => `<button class="clue ${session.clues.includes(c.index) ? "picked" : ""}" data-action="clue:${c.index}">${session.clues.includes(c.index) ? "✓" : "＋"} ${esc(c.text)}</button>`).join("") || '<p class="hint">继续观察对话，更多线索会逐步出现。</p>'}<p class="hint">${session.mode === "challenge" ? "标记你注意到的线索，解析会在复盘中揭示。" : "点击线索，理解它能证明什么、不能证明什么。"}</p></section></aside></div>`;
+  return `<div class="sms-stage">
+    <section class="phone-device sms-phone" aria-label="模拟手机对话">
+      ${phoneStatus()}
+      <div class="chat-head"><a class="phone-back" href="#home" aria-label="保存并返回收件箱">‹</a><div class="chat-contact"><span class="contact-avatar" aria-hidden="true">${esc(s.actor[0])}</span><div><strong>${esc(s.actor)}</strong><small>虚构联系人 · 模拟对话</small></div></div><button class="phone-info" data-action="conversation-tools" aria-label="查看线索与本局信息">···</button></div>
+      <div class="thread-status"><span>${session.mode === "challenge" ? "挑战模式" : "陪练模式"}</span><span>${aiEnabled && config.enabled ? "AI 已开启" : "本地模式"} · 第 ${session.history.length + 1} 幕</span></div>
+      <div class="chat-log" role="log" aria-label="剧情对话" tabindex="0">${history}<div class="message-time">现在 · 第 ${session.history.length + 1} 幕</div><div class="bubble current"><small>${session.node === "verify" ? "核实结果" : "当前消息"}</small>${esc(node.text)}</div>${chatMessages
+        .filter((m) => m.node === session.node)
+        .map(
+          (m) =>
+            `<div class="bubble ${m.role === "user" ? "mine" : m.generated ? "ai" : "local"}"><small>${m.role === "user" ? "你的追问" : m.generated ? "AI 生成 · 仅供练习" : "本地陪练提示"}</small>${esc(m.content)}</div>`,
+        )
+        .join(
+          "",
+        )}${aiBusy ? '<p class="hint typing-status" role="status"><span aria-hidden="true">•••</span> 正在等待回复… ' + button("取消等待", "cancel-chat", "text") + "</p>" : ""}</div>
+      <div class="reply-area">
+        ${suggested ? `<div class="notice">AI 理解你想做：${esc(node.choices.find((c) => c.id === suggested)?.text)}。<br>${button("确认采用这个行动", "choose:" + suggested, "primary")}<span class="quiet"> 也可以选择其他行动。</span></div>` : ""}
+        <p class="reply-caption">你会怎么回复或行动？</p>
+        <div class="choices" aria-label="选择你的下一步">${choices.map((c, i) => `<button data-action="choose:${c.id}"><b>${String.fromCharCode(65 + i)}</b><span>${esc(c.text)}</span><span class="reply-arrow" aria-hidden="true">↗</span></button>`).join("")}</div>
+        <details id="chat-details" ${chatOpen ? "open" : ""}><summary><span class="compose-plus" aria-hidden="true">＋</span>自己输入一句<span class="compose-mode">${aiEnabled && config.enabled ? "AI 对话" : "本地陪练"}</span></summary><p class="hint">${aiEnabled && config.enabled ? "当前场景、最近 6 条对话和这次输入会发送给 " + esc(config.provider) + "。不要输入真实个人信息。" : "本地陪练不上传输入。要获得更灵活的多轮回复，可在设置中启用 AI。"}</p>
+        <div class="row followups">${(followups.length ? followups : ["我可以通过什么渠道核实？", "这条消息还缺什么证据？"]).map((t, i) => button(esc(t), "followup:" + i, "chip")).join("")}</div>
+        <form id="chat-form" class="compose"><textarea id="message" aria-label="你的回复" placeholder="你想怎么回复？" maxlength="600" required ${aiBusy ? "disabled" : ""}></textarea><button class="primary" ${aiBusy ? "disabled" : ""}>发送</button></form><p class="quiet">输入不会自动推进剧情，需要你确认行动。每局最多 8 次 AI 追问。</p></details>
+      </div>
+      <div class="phone-bottom"><span>没有真实转账 · 不会联系任何人</span><div class="home-indicator" aria-hidden="true"></div></div>
+    </section>
+    <aside id="conversation-tools" class="conversation-tools" tabindex="-1">
+      <div class="conversation-context"><div class="eyebrow">这一段对话</div><h1 class="game-title">${session.mode === "challenge" ? "先聊一聊，再下结论。" : esc(s.title)}</h1><p>${esc(s.desc)}</p><a class="quiet" href="#home">← 保存并回到收件箱</a></div>
+      <section class="phone-wallet"><div><span>模拟余额</span><strong>${fmt(session.money)}</strong></div><div><span>账户控制</span><strong>${session.privacy}%</strong></div><p>都是模拟数字。随时可以停下，不必把这一局玩到底。</p></section>
+      <section class="phone-clues"><div class="aside-title">随手记下线索 <span>${session.clues.length} / ${clues.length}</span></div>${clues.map((c) => `<button class="clue ${session.clues.includes(c.index) ? "picked" : ""}" data-action="clue:${c.index}" aria-pressed="${session.clues.includes(c.index)}">${session.clues.includes(c.index) ? "✓" : "＋"} ${esc(c.text)}</button>`).join("") || '<p class="hint">继续观察，新的线索会逐步出现。</p>'}<p class="hint">${session.mode === "challenge" ? "这里只记录观察，结束后再揭晓解析。" : "点开线索，看看它能证明什么、不能证明什么。"}</p></section>
+      <div class="conversation-links"><a href="#guide">先学三个核实动作 ↗</a><a href="#settings">${aiEnabled && config.enabled ? "管理 AI 对话" : "接入 LLM，自由追问"} ↗</a></div>
+    </aside>
+  </div>`;
 }
 function result(s) {
   const ending = s.outcomes?.[session.node] || {
@@ -284,6 +314,12 @@ function about() {
 }
 function render() {
   const route = (location.hash || "#home").slice(1);
+  document.body.dataset.view =
+    route === "play" && session && !session.ended
+      ? "phone-play"
+      : route === "home"
+        ? "phone-home"
+        : route;
   $("#main").innerHTML =
     learning?.route(route) ??
     (
@@ -298,6 +334,7 @@ function render() {
       a.setAttribute(
         "aria-current",
         a.hash === "#" + route ||
+          (a.hash === "#home" && route === "play") ||
           (a.hash === "#learn" &&
             /^(article:|document:|selfcheck|games|classic:|glossary|sources|resources)/.test(
               route,
@@ -494,7 +531,14 @@ document.addEventListener("click", async (e) => {
   const [action, arg, value] = target.dataset.action.split(":");
   switch (action) {
     case "start":
-      start(arg);
+      if (
+        target.classList.contains("message-row") &&
+        saved.session?.id === arg &&
+        !saved.session.ended
+      ) {
+        href("play");
+        render();
+      } else start(arg);
       break;
     case "confirm-start":
       $("#modal").close();
@@ -515,6 +559,10 @@ document.addEventListener("click", async (e) => {
     case "filter":
       filter = arg;
       render();
+      break;
+    case "conversation-tools":
+      $("#conversation-tools")?.scrollIntoView({ block: "start" });
+      $("#conversation-tools")?.focus({ preventScroll: true });
       break;
     case "choose":
       choose(arg);

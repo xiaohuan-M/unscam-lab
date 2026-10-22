@@ -72,7 +72,7 @@ test("normal scenario rewards evidence-based continuation", async ({
 test("challenge hides explanations until debrief", async ({ page }) => {
   await ready(page);
   await action(page, "mode:challenge").click();
-  await expect(page.locator(".case-body h3").first()).toContainText("未知情境");
+  await expect(page.locator(".message-note").first()).toContainText("未知情境");
   await start(page);
   await action(page, "clue:0").click();
   await expect(page.locator("dialog")).toContainText("完整解释将在本局复盘");

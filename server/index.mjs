@@ -77,7 +77,7 @@ export function createApp({
           "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'",
         );
       if (url.pathname === "/api/health" && req.method === "GET")
-        return send(200, { status: "ok", version: "3.0.0" });
+        return send(200, { status: "ok", version: "3.1.0" });
       if (url.pathname === "/api/config" && req.method === "GET")
         return send(200, {
           enabled,
@@ -286,7 +286,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     host = process.env.HOST || "127.0.0.1";
   const app = createApp();
   app.listen(port, host, () =>
-    console.log(`识局 v3.0.0 · http://${host}:${port}`),
+    console.log(`识局 v3.1.0 · http://${host}:${port}`),
   );
   const shutdown = () => {
     app.close(() => process.exit(0));

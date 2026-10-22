@@ -1900,7 +1900,866 @@ footer a {
 }
 
 /* Dark controls must not inherit pale backgrounds with pale text. */
-[data-theme="dark"] button, [data-theme="dark"] .button { background: var(--white); color: var(--ink); }
-[data-theme="dark"] .tag, [data-theme="dark"] .badge { background: #364b39; color: #e4eadd; }
-[data-theme="dark"] button.primary, [data-theme="dark"] .button.primary, [data-theme="dark"] .chip.selected { background: #c4d995; color: #203d32; }
-[data-theme="dark"] button.text { background: transparent; }
+[data-theme="dark"] button,
+[data-theme="dark"] .button {
+  background: var(--white);
+  color: var(--ink);
+}
+[data-theme="dark"] .tag,
+[data-theme="dark"] .badge {
+  background: #364b39;
+  color: #e4eadd;
+}
+[data-theme="dark"] button.primary,
+[data-theme="dark"] .button.primary,
+[data-theme="dark"] .chip.selected {
+  background: #c4d995;
+  color: #203d32;
+}
+[data-theme="dark"] button.text {
+  background: transparent;
+}
+
+/* Phone-first experience: the inbox and conversation are the main product. */
+.phone-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 430px;
+  align-items: center;
+  gap: clamp(36px, 6vw, 96px);
+  max-width: 1030px;
+  margin: 0 auto;
+}
+body[data-view="phone-home"] main,
+body[data-view="phone-play"] main {
+  padding-top: 34px;
+}
+.phone-intro {
+  max-width: 470px;
+}
+.phone-intro .eyebrow {
+  margin-bottom: 26px;
+  letter-spacing: 2.8px;
+}
+.phone-intro h1 {
+  font-size: clamp(38px, 4.1vw, 58px);
+  letter-spacing: -2px;
+  line-height: 1.3;
+  margin-bottom: 22px;
+}
+.phone-intro h1 em {
+  color: var(--orange);
+  font-style: normal;
+}
+.phone-lead {
+  font-size: 16px;
+  line-height: 1.9;
+}
+.phone-start {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  margin: 26px 0 32px;
+}
+.phone-start .primary {
+  border-radius: 28px;
+  padding: 15px 26px;
+}
+.phone-start .quiet {
+  font-size: 12px;
+}
+.phone-progress {
+  border-top: 1px solid var(--line);
+  padding: 22px 0 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.phone-progress b {
+  font-size: 25px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.phone-progress a {
+  color: var(--ink);
+}
+.phone-footnote {
+  font-size: 13px;
+  margin: 12px 0 25px;
+}
+.phone-extras {
+  display: grid;
+  gap: 4px;
+}
+.phone-extras a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+}
+.phone-extras a > span:first-child {
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.phone-extras a > span:last-child {
+  margin-left: auto;
+  color: var(--muted);
+}
+.phone-extras strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 550;
+}
+.phone-extras small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 5px;
+}
+.phone-extras a:hover strong {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.phone-device {
+  --phone-screen: #fcfcfa;
+  --phone-chat: #f0f1ed;
+  --phone-incoming: #fff;
+  --phone-outgoing: #d7ebc0;
+  --phone-outline: #30423a;
+  background: var(--phone-screen);
+  border: 7px solid var(--phone-outline);
+  border-radius: 42px;
+  box-shadow:
+    0 2px 0 2px #14271d,
+    0 24px 55px -22px #24382e55;
+  overflow: hidden;
+  min-width: 0;
+  color: var(--ink);
+}
+.phone-status {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  font-size: 12px;
+  font-weight: 700;
+  position: relative;
+  flex-shrink: 0;
+}
+.phone-island {
+  position: absolute;
+  width: 80px;
+  height: 21px;
+  border-radius: 20px;
+  background: var(--phone-outline);
+  left: 50%;
+  top: 6px;
+  transform: translateX(-50%);
+}
+.phone-signal {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+}
+.phone-signal i {
+  display: block;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  width: 19px;
+  height: 9px;
+  padding: 1px;
+  position: relative;
+}
+.phone-signal i:before {
+  content: "";
+  display: block;
+  background: currentColor;
+  width: 80%;
+  height: 100%;
+  border-radius: 1px;
+}
+.phone-signal i:after {
+  content: "";
+  position: absolute;
+  background: currentColor;
+  width: 2px;
+  height: 4px;
+  right: -3px;
+  top: 1.5px;
+}
+.inbox-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px 18px;
+}
+.phone-kicker {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+}
+.inbox-heading h2 {
+  font-size: 31px;
+  letter-spacing: -1px;
+  margin: 6px 0 0;
+  font-weight: 650;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.inbox-heading h2 > span {
+  font-size: 11px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 3px 7px;
+  letter-spacing: 0;
+}
+.sms-icon {
+  font-size: 28px;
+  color: var(--green);
+}
+.phone-modes {
+  display: flex;
+  margin: 0 20px 14px;
+  padding: 4px;
+  border-radius: 13px;
+  background: var(--phone-chat);
+  gap: 3px;
+}
+.phone-modes button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: 8px 6px;
+  font-size: 13px;
+  border-radius: 9px;
+  min-width: 0;
+  gap: 5px;
+}
+.phone-modes button span {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.phone-modes button[aria-pressed="true"] {
+  background: var(--phone-incoming);
+  box-shadow: 0 1px 5px #152b1612;
+  color: var(--ink);
+}
+.inbox-filters {
+  padding: 0 22px 12px;
+  margin: 0;
+  gap: 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+}
+.inbox-filters button.chip {
+  padding: 6px 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  font-size: 11px;
+  color: var(--muted);
+}
+.inbox-filters button.chip.selected {
+  color: var(--ink);
+  background: transparent;
+  box-shadow: 0 2px 0 var(--ink);
+}
+.inbox-list {
+  height: 410px;
+  overflow: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.inbox-phone .case {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+  transition: none;
+}
+.inbox-phone .case:hover {
+  transform: none;
+  box-shadow: none;
+}
+.message-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 18px 19px;
+  gap: 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  text-align: left;
+  background: transparent;
+}
+.message-row:hover {
+  background: var(--phone-chat);
+}
+.message-row:focus-visible {
+  outline-offset: -3px;
+}
+.contact-avatar {
+  display: grid;
+  place-items: center;
+  width: 43px;
+  height: 43px;
+  border-radius: 16px;
+  background: #e4ebdd;
+  color: #38533d;
+  font-size: 18px;
+  font-weight: 550;
+  flex: 0 0 auto;
+}
+.contact-1 {
+  background: #ece5d8;
+  color: #795b36;
+}
+.contact-2 {
+  background: #dfe9ed;
+  color: #436576;
+}
+.contact-3 {
+  background: #eee1df;
+  color: #8d5853;
+}
+.inbox-phone .case-body {
+  padding: 0;
+  flex: 1;
+  min-width: 0;
+}
+.message-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px;
+}
+.message-top strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.message-top small {
+  font-size: 9px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.message-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  margin-top: 5px;
+}
+.message-note {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.message-indicator {
+  color: var(--green);
+  font-size: 9px;
+  flex-shrink: 0;
+}
+.phone-bottom {
+  text-align: center;
+  padding: 12px 20px 8px;
+  border-top: 1px solid var(--line);
+  background: var(--phone-screen);
+}
+.phone-bottom > span {
+  color: var(--muted);
+  font-size: 9px;
+}
+.home-indicator {
+  width: 96px;
+  height: 4px;
+  border-radius: 4px;
+  margin: 12px auto 0;
+  background: var(--ink);
+  opacity: 0.7;
+}
+.sms-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 500px) minmax(0, 280px);
+  gap: 56px;
+  max-width: 900px;
+  justify-content: center;
+  align-items: start;
+  margin: 0 auto;
+}
+.sms-phone .chat-head {
+  padding: 10px 18px 14px;
+  gap: 10px;
+}
+.phone-back {
+  font-size: 35px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  min-height: 44px;
+  flex-shrink: 0;
+}
+.chat-contact {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+.chat-contact strong {
+  font-size: 14px;
+}
+.chat-contact .contact-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 13px;
+  font-size: 15px;
+}
+.sms-phone .chat-head small {
+  font-size: 9px;
+  margin-top: 4px;
+}
+.phone-info {
+  border: 0;
+  padding: 10px 5px;
+  min-width: 40px;
+  background: transparent;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+.thread-status {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 22px;
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--phone-chat);
+}
+.sms-phone .chat-log {
+  background: var(--phone-chat);
+  min-height: 230px;
+  max-height: 340px;
+  padding: 0 22px 14px;
+  overflow: auto;
+  scroll-padding: 12px;
+}
+.message-time {
+  text-align: center;
+  font-size: 10px;
+  color: var(--muted);
+  margin: 12px 0 20px;
+}
+.sms-phone .bubble {
+  max-width: 88%;
+  border: 0;
+  border-radius: 17px 17px 17px 5px;
+  padding: 13px 16px;
+  background: var(--phone-incoming);
+  font-size: 14px;
+  line-height: 1.8;
+  box-shadow: 0 1px 1px #1e39220c;
+  margin: 12px 0 18px;
+}
+.sms-phone .bubble.mine {
+  margin-left: auto;
+  border-radius: 17px 17px 5px 17px;
+  background: var(--phone-outgoing);
+}
+.sms-phone .bubble.current {
+  border: 0;
+}
+.sms-phone .bubble small {
+  font-size: 9px;
+  margin-bottom: 4px;
+}
+.sms-phone .bubble.local {
+  border: 1px dashed var(--line);
+  background: var(--phone-screen);
+}
+.sms-phone .bubble.ai {
+  border: 1px dashed var(--green);
+}
+.reply-area {
+  padding: 16px 20px 0;
+}
+.reply-caption {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.sms-phone .choices {
+  gap: 8px;
+  margin: 0 0 16px;
+}
+.sms-phone .choices button {
+  padding: 11px 12px;
+  border-radius: 13px;
+  font-size: 12px;
+  line-height: 1.6;
+  gap: 10px;
+  background: var(--phone-screen);
+}
+.sms-phone .choices button:hover {
+  border-color: var(--green);
+  background: var(--phone-chat);
+}
+.sms-phone .choices b {
+  padding: 0;
+  min-width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  border-radius: 50%;
+  background: var(--phone-chat);
+  color: var(--muted);
+}
+.reply-arrow {
+  margin-left: auto;
+  font-size: 15px;
+  color: var(--muted);
+}
+.sms-phone #chat-details {
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+}
+.sms-phone #chat-details summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  font-size: 12px;
+  padding: 14px 0;
+}
+.sms-phone #chat-details summary::-webkit-details-marker {
+  display: none;
+}
+.compose-plus {
+  font-size: 19px;
+}
+.compose-mode {
+  margin-left: auto;
+  padding: 4px 8px;
+  background: var(--phone-chat);
+  font-size: 10px;
+  color: var(--muted);
+  border-radius: 8px;
+}
+.sms-phone #chat-details[open] .compose-plus {
+  transform: rotate(45deg);
+}
+.sms-phone #chat-details p {
+  font-size: 11px;
+}
+.sms-phone .followups {
+  gap: 6px;
+  margin: 12px 0;
+}
+.sms-phone .followups button {
+  font-size: 11px;
+  padding: 8px 10px;
+}
+.sms-phone .compose {
+  margin-bottom: 12px;
+}
+.sms-phone .compose textarea {
+  font-size: 13px;
+}
+.sms-phone .compose button {
+  padding: 10px 13px;
+  font-size: 12px;
+}
+.sms-phone .notice {
+  font-size: 12px;
+  padding: 12px;
+  margin: 0 0 15px;
+}
+.typing-status {
+  font-size: 11px;
+}
+.typing-status > span {
+  letter-spacing: 3px;
+}
+.conversation-tools {
+  padding-top: 30px;
+  scroll-margin-top: 20px;
+}
+.conversation-context .eyebrow {
+  margin-bottom: 14px;
+}
+.conversation-context h1 {
+  font-size: 27px;
+  line-height: 1.45;
+  letter-spacing: -0.6px;
+}
+.conversation-context p {
+  font-size: 13px;
+  margin: 12px 0;
+}
+.conversation-context > a {
+  display: inline-block;
+  font-size: 11px;
+  margin: 0 0 26px;
+}
+.phone-wallet {
+  padding: 19px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.phone-wallet span {
+  color: var(--muted);
+  font-size: 10px;
+  display: block;
+  margin-bottom: 8px;
+}
+.phone-wallet strong {
+  font-size: 23px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.phone-wallet p {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  margin: 2px 0 0;
+}
+.phone-clues {
+  margin-top: 24px;
+}
+.phone-clues .aside-title {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  gap: 10px;
+}
+.phone-clues .aside-title span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.phone-clues .clue {
+  font-size: 12px;
+  padding: 13px;
+  border-radius: 10px;
+  line-height: 1.7;
+}
+.phone-clues .hint {
+  font-size: 11px;
+}
+.conversation-links {
+  display: grid;
+  gap: 14px;
+  margin-top: 25px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.large .message-preview,
+.large .message-top strong,
+.large .sms-phone .bubble,
+.large .sms-phone .choices button,
+.large .sms-phone #chat-details summary {
+  font-size: 18px;
+}
+.large .message-note,
+.large .phone-modes button,
+.large .inbox-filters button.chip {
+  font-size: 14px;
+}
+.large .phone-modes button {
+  flex-wrap: wrap;
+}
+[data-theme="dark"] .phone-device {
+  --phone-screen: #202e27;
+  --phone-chat: #18251f;
+  --phone-incoming: #2f4035;
+  --phone-outgoing: #3c5332;
+  --phone-outline: #405247;
+}
+[data-theme="dark"] .phone-modes button {
+  background: transparent;
+}
+[data-theme="dark"] .phone-modes button[aria-pressed="true"] {
+  background: var(--phone-incoming);
+}
+[data-theme="dark"] .inbox-filters button.chip,
+[data-theme="dark"] .message-row,
+[data-theme="dark"] .phone-info {
+  background: transparent;
+}
+[data-theme="dark"] .message-row:hover {
+  background: var(--phone-chat);
+}
+@media (max-width: 1000px) {
+  .phone-stage {
+    grid-template-columns: minmax(0, 1fr) 400px;
+    gap: 35px;
+  }
+  .phone-intro h1 {
+    font-size: 40px;
+  }
+  .phone-lead {
+    font-size: 14px;
+  }
+  .sms-stage {
+    gap: 32px;
+    grid-template-columns: minmax(0, 480px) minmax(0, 230px);
+  }
+}
+@media (max-width: 780px) {
+  .phone-stage {
+    grid-template-columns: minmax(0, 440px);
+    justify-content: center;
+    gap: 25px;
+  }
+  .phone-intro {
+    display: contents;
+  }
+  .phone-intro .eyebrow,
+  .phone-intro h1,
+  .phone-lead,
+  .phone-progress,
+  .phone-footnote {
+    display: none;
+  }
+  .phone-start {
+    grid-row: 1;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .phone-start .primary {
+    padding: 10px 17px;
+    font-size: 13px;
+  }
+  .phone-start .quiet {
+    font-size: 10px;
+  }
+  .inbox-phone {
+    grid-row: 2;
+  }
+  .phone-extras {
+    grid-row: 3;
+  }
+  .sms-stage {
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    gap: 24px;
+  }
+  .sms-phone {
+    width: 100%;
+  }
+  .conversation-tools {
+    padding: 0 10px;
+    width: 100%;
+  }
+}
+@media (max-width: 500px) {
+  body[data-view="phone-home"] main,
+  body[data-view="phone-play"] main {
+    padding: 18px 0 35px;
+  }
+  .phone-stage {
+    gap: 16px;
+  }
+  .phone-start {
+    padding: 0 20px;
+  }
+  .phone-start .quiet {
+    display: none;
+  }
+  .phone-device {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .phone-status {
+    display: none;
+  }
+  .inbox-heading {
+    padding: 16px 22px 20px;
+  }
+  .inbox-heading h2 {
+    font-size: 32px;
+  }
+  .inbox-list {
+    height: min(460px, 57svh);
+    min-height: 275px;
+  }
+  .message-row {
+    padding: 17px 20px;
+  }
+  .message-top strong {
+    font-size: 15px;
+  }
+  .message-preview {
+    font-size: 13px;
+  }
+  .message-note {
+    font-size: 10px;
+  }
+  .phone-extras {
+    padding: 4px 22px;
+  }
+  .sms-phone .chat-head {
+    padding: 10px 15px 14px;
+  }
+  .sms-phone .chat-log {
+    min-height: 200px;
+    max-height: 40svh;
+    padding: 0 18px 14px;
+  }
+  .sms-phone .bubble {
+    font-size: 15px;
+  }
+  .sms-phone .choices button {
+    font-size: 13px;
+  }
+  .reply-area {
+    padding: 16px 18px 0;
+  }
+  .conversation-tools {
+    padding: 0 22px;
+  }
+  .home-indicator {
+    display: none;
+  }
+  .phone-bottom {
+    padding-bottom: 12px;
+  }
+  .phone-modes button {
+    min-height: 40px;
+  }
+  .large .phone-modes button {
+    flex-direction: column;
+    gap: 3px;
+  }
+}
