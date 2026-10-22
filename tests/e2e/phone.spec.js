@@ -47,17 +47,20 @@ test("phone presentation stays readable in dark and large-text modes", async ({
   await page.screenshot({
     path: "test-results/phone-inbox-desktop.png",
     fullPage: true,
+    animations: "disabled",
   });
   await page.locator('.message-row[data-action="start:refund"]').click();
   await action(page, "choose:ask").click();
   await page.screenshot({
     path: "test-results/phone-chat-desktop.png",
     fullPage: true,
+    animations: "disabled",
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
     path: "test-results/phone-chat-mobile.png",
     fullPage: true,
+    animations: "disabled",
   });
   await action(page, "theme").click();
   await page.locator("#font").click();
@@ -73,6 +76,7 @@ test("phone presentation stays readable in dark and large-text modes", async ({
   await page.screenshot({
     path: "test-results/phone-chat-dark-large.png",
     fullPage: true,
+    animations: "disabled",
   });
   await page
     .getByRole("link", { name: "保存并返回收件箱", exact: true })
