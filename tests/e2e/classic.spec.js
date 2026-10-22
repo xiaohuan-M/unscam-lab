@@ -6,6 +6,7 @@ async function scene(page, id, { instant = true } = {}) {
   await expect(game(page, "start:challenge")).toBeVisible();
   await frame(page).locator(".scene-picker summary").click();
   await game(page, "scene:" + id).click();
+  await game(page, "open-scene").click();
   if (instant) await frame(page).getByLabel("消息节奏").selectOption("instant");
   await expect(frame(page).locator("#chatMsgs")).toBeVisible();
 }
@@ -71,6 +72,7 @@ test("paid choices create one transfer and stopping retains the loss in review",
   await scene(page, 1);
   await choice(page, "reply-0");
   await choice(page, "act-0");
+  await game(page, "pay-confirm").click();
   await expect(frame(page).locator(".transfer-bubble")).toHaveCount(1);
   const amount = await frame(page)
     .locator(".transfer-bubble strong")
@@ -114,6 +116,7 @@ test("AI free replies stay inside WeChat and require explicit confirmation of ca
   await page.getByRole("link", { name: "微信模拟", exact: true }).click();
   await frame(page).locator(".scene-picker summary").click();
   await game(page, "scene:1").click();
+  await game(page, "open-scene").click();
   await frame(page).getByLabel("消息节奏").selectOption("instant");
   await frame(page).getByLabel("自己回复一句").fill("我先自己核实一下再说");
   await frame(page).getByRole("button", { name: "发送", exact: true }).click();
@@ -196,8 +199,116 @@ test("the original game remains playable offline and includes all sixteen scene 
   await page.reload();
   await expect(frame(page).locator(".scene-list button")).toHaveCount(16);
   await game(page, "resume").click();
+  await game(page, "open-scene").click();
   await choice(page, "verify");
   await choice(page, "continue");
   await expect(frame(page).locator(".kpis")).toContainText("¥10,000");
   await context.setOffline(false);
+});
+
+test("chapter arrivals preserve progress and only open on an explicit action", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await expect(game(page, "start:warmup")).toBeVisible();
+  await page.screenshot({
+    path: "test-results/game-start.png",
+    fullPage: true,
+    animations: "disabled",
+  });
+  await game(page, "start:warmup").click();
+  await expect(frame(page).locator(".chapter-count strong")).toHaveText(
+    "01 / 04",
+  );
+  await expect(frame(page).locator("#chatMsgs")).toHaveCount(0);
+  await expect(game(page, "sound")).toHaveAttribute("aria-pressed", "false");
+  expect((await saved(page)).actions).toEqual([]);
+  await page.screenshot({
+    path: "test-results/game-incoming.png",
+    fullPage: true,
+    animations: "disabled",
+  });
+  await game(page, "pause").click();
+  await page.reload();
+  await game(page, "resume").click();
+  expect((await saved(page)).actions).toEqual([]);
+  await game(page, "open-scene").click();
+  await choice(page, "verify");
+  await expect(frame(page).locator(".round-receipt")).toBeVisible();
+  await choice(page, "continue");
+  await expect(frame(page).locator(".chapter-count strong")).toHaveText(
+    "02 / 04",
+  );
+  expect((await saved(page)).actions).toEqual(["verify", "continue"]);
+  await game(page, "open-scene").click();
+  await expect(frame(page).locator(".round-track .done")).toHaveCount(1);
+});
+
+test("simulated payment can be cancelled, escaped and reloaded without spending", async ({
+  page,
+}) => {
+  await scene(page, 1);
+  await choice(page, "reply-0");
+  const before = (await saved(page)).actions;
+  await choice(page, "act-0");
+  await expect(
+    frame(page).getByRole("dialog", { name: "确认模拟转账" }),
+  ).toBeVisible();
+  expect((await saved(page)).actions).toEqual(before);
+  await expect(frame(page).locator(".game-wallet")).toContainText("¥10,000");
+  await page.screenshot({
+    path: "test-results/game-payment.png",
+    animations: "disabled",
+  });
+  await game(page, "pay-cancel").click();
+  expect((await saved(page)).actions).toEqual(before);
+  await choice(page, "act-0");
+  await page.keyboard.press("Escape");
+  await expect(frame(page).getByRole("dialog")).not.toBeVisible();
+  expect((await saved(page)).actions).toEqual(before);
+  await choice(page, "act-0");
+  await page.reload();
+  await game(page, "resume").click();
+  expect((await saved(page)).actions).toEqual(before);
+  await choice(page, "act-0");
+  await game(page, "pay-confirm").click({ clickCount: 2 });
+  await expect(frame(page).locator(".transfer-bubble")).toHaveCount(1);
+  expect((await saved(page)).actions).toEqual([...before, "act-0"]);
+  await choice(page, "step-1");
+  await choice(page, "continue");
+  await expect(frame(page).locator(".earned-badges")).toContainText("及时刹车");
+  await expect(frame(page).locator(".earned-badges")).toContainText(
+    "完成这一程",
+  );
+  await page.screenshot({
+    path: "test-results/game-review.png",
+    fullPage: true,
+    animations: "disabled",
+  });
+});
+
+test("keyboard shortcuts respect text input and reduced motion; audio is opt-in", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await scene(page, 1, { instant: false });
+  await expect(game(page, "choice:verify")).toBeEnabled();
+  await expect(frame(page).getByLabel("对方正在输入")).toHaveCount(0);
+  await expect(game(page, "sound")).toHaveAttribute("aria-pressed", "false");
+  await game(page, "sound").click();
+  await expect(game(page, "sound")).toHaveAttribute("aria-pressed", "true");
+  await game(page, "sound").click();
+  await expect(game(page, "sound")).toHaveAttribute("aria-pressed", "false");
+  await frame(page).getByLabel("自己回复一句").fill("我想问");
+  await frame(page).getByLabel("自己回复一句").press("1");
+  expect((await saved(page)).actions).toEqual([]);
+  await expect(frame(page).getByLabel("自己回复一句")).toHaveValue("我想问1");
+  const first = await frame(page)
+    .locator(".reply-options button")
+    .first()
+    .getAttribute("data-choice");
+  await frame(page).locator("#chatMsgs").press("1");
+  expect((await saved(page)).actions).toEqual([first]);
 });
