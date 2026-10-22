@@ -1,0 +1,78 @@
+{
+  "sources": [
+    {
+      "id": "nfra-2024",
+      "title": "关于防范新型电信网络诈骗的风险提示",
+      "publisher": "国家金融监督管理总局",
+      "date": "2024-07-25",
+      "checked": "2026-10-22",
+      "url": "https://app.www.gov.cn/govdata/gov/202407/25/517630/article.html"
+    },
+    {
+      "id": "beijing-2025",
+      "title": "北京警方发布五类暑期易高发电诈案件类型",
+      "publisher": "北京市公安局",
+      "date": "2025-07-04",
+      "checked": "2026-10-22",
+      "url": "https://gaj.beijing.gov.cn/xxfb/jwbd/202507/t20250704_4142141.html"
+    },
+    {
+      "id": "shanghai-2025",
+      "title": "上海警方推进春季战役严打电信网络诈骗",
+      "publisher": "上海市公安局",
+      "date": "2025-05-22",
+      "checked": "2026-10-22",
+      "url": "https://www.shanghai.gov.cn/nw31406/20250527/ab65c2b8613447a9bcd8535363369efd.html"
+    }
+  ],
+  "cards": [
+    {
+      "id": "independent",
+      "title": "先核实请求，再判断身份",
+      "why": "对方说中了信息，不代表来电就可靠。",
+      "action": "回到自己找到的官方入口或已保存的联系方式，核对具体请求。",
+      "sourceId": "nfra-2024",
+      "scenario": "voice"
+    },
+    {
+      "id": "sharing",
+      "title": "屏幕共享可能把账户操作交给别人",
+      "why": "陌生人借办理业务要求共享屏幕，需要暂停。",
+      "action": "结束共享，从独立渠道处理原本的业务。",
+      "sourceId": "nfra-2024",
+      "scenario": "refund"
+    },
+    {
+      "id": "returns",
+      "title": "小额返款不是后续安全证明",
+      "why": "返过一次钱，也可能是在为大额投入建立信任。",
+      "action": "遇到垫资做任务、充值解冻要求，停止投入。",
+      "sourceId": "beijing-2025",
+      "scenario": "job"
+    },
+    {
+      "id": "platform",
+      "title": "别让交易离开可核实的流程",
+      "why": "售票截图与群内口碑不能替代交易保障。",
+      "action": "核对票务规则，警惕另付解冻费等追加条件。",
+      "sourceId": "beijing-2025",
+      "scenario": "ticket"
+    },
+    {
+      "id": "account",
+      "title": "账户控制权不能随意借出",
+      "why": "帮人收转资金也可能卷入风险。",
+      "action": "不出租出借银行卡、电话卡，不提供密码与验证码。",
+      "sourceId": "shanghai-2025",
+      "scenario": "account"
+    },
+    {
+      "id": "recovery",
+      "title": "别为追回损失再付一笔",
+      "why": "陌生“黑客”“网警”的追款承诺可能造成二次损失。",
+      "action": "保存现有记录，通过警方和金融机构官方渠道处理。",
+      "sourceId": "nfra-2024",
+      "scenario": "recovery"
+    }
+  ]
+}
