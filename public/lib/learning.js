@@ -192,7 +192,7 @@ export function createLearning(ctx) {
         .filter((d) => d.kind === "长文")
         .map(
           (d) =>
-            `<article class="panel"><span class="tag">深度阅读</span><h3>${esc(d.title)}</h3>${docLink(d)}</article>`,
+            `<article class="panel"><span class="tag">深度阅读</span><h3>${esc(d.title)}</h3>${link("document:"+d.id,"阅读全文 →","text-link")}</article>`,
         )
         .join(
           "",

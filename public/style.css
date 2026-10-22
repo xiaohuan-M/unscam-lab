@@ -1898,3 +1898,9 @@ footer a {
     --orange: #333;
   }
 }
+
+/* Dark controls must not inherit pale backgrounds with pale text. */
+[data-theme="dark"] button, [data-theme="dark"] .button { background: var(--white); color: var(--ink); }
+[data-theme="dark"] .tag, [data-theme="dark"] .badge { background: #364b39; color: #e4eadd; }
+[data-theme="dark"] button.primary, [data-theme="dark"] .button.primary, [data-theme="dark"] .chip.selected { background: #c4d995; color: #203d32; }
+[data-theme="dark"] button.text { background: transparent; }
