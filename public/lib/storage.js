@@ -1,7 +1,9 @@
+import { sanitizeClassic, mergeClassic } from "../classic/engine.js";
 import { restoreSession } from "../engine.js";
 export const STORAGE_KEY = "unscam-v2";
 export const emptyProgress = () => ({
   version: 3,
+  classic: { current: null, recent: [] },
   puzzles: {},
   read: {},
   selfcheck: {},
@@ -112,6 +114,7 @@ export function validateProgress(
       }
       p.mistakes[id] = { level: r.level, due: r.due };
     }
+  p.classic = sanitizeClassic(raw.classic);
   p.puzzles = validatePuzzles(raw.puzzles, strict);
   p.theme = raw.theme === "dark" ? "dark" : "light";
   p.lastArticle = knowledge.some((a) => a.id === raw.lastArticle)
@@ -164,6 +167,7 @@ export function loadProgress(storage, scenarios, knowledge) {
 export function mergeProgress(current, incoming) {
   const merged = {
     ...current,
+    classic: mergeClassic(current.classic, incoming.classic),
     theme: incoming.theme,
     large: incoming.large,
     lastArticle: current.lastArticle || incoming.lastArticle,
@@ -217,6 +221,7 @@ export function backup(progress) {
     theme,
     lastArticle,
     puzzles,
+    classic,
   } = progress;
   return {
     version,
@@ -230,5 +235,6 @@ export function backup(progress) {
     theme,
     lastArticle,
     puzzles,
+    classic: sanitizeClassic(classic),
   };
 }

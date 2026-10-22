@@ -2763,3 +2763,46 @@ body[data-view="phone-play"] main {
     gap: 3px;
   }
 }
+
+/* The original WeChat-style game is the main experience. */
+body[data-view="original-game"] {
+  background: #e1e5e1;
+}
+body[data-view="original-game"] > header {
+  height: 66px;
+  max-width: none;
+  background: var(--white);
+}
+body[data-view="original-game"] > main {
+  padding: 18px 0 0;
+  max-width: 900px;
+  min-height: 0;
+}
+body[data-view="original-game"] > footer {
+  display: none;
+}
+body[data-view="original-game"] .original-game-frame {
+  display: block;
+  width: 100%;
+  height: calc(100dvh - 84px);
+  min-height: 480px;
+  border: 0;
+  border-radius: 0;
+  background: #ededed;
+}
+[data-theme="dark"] body[data-view="original-game"] {
+  background: #111713;
+}
+@media (max-width: 780px) {
+  body[data-view="original-game"] > header {
+    display: none;
+  }
+  body[data-view="original-game"] > main {
+    padding: 0;
+    max-width: none;
+  }
+  body[data-view="original-game"] .original-game-frame {
+    height: 100dvh;
+    min-height: 0;
+  }
+}

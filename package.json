@@ -1,6 +1,6 @@
 {
   "name": "unscam-lab",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -11,10 +11,11 @@
     "dev": "node --watch --env-file-if-exists=.env server/index.mjs",
     "test": "node --test tests/*.test.mjs",
     "check": "node scripts/check.mjs",
-    "build": "node scripts/build.mjs",
+    "build": "node scripts/prepare-classic.mjs && node scripts/build.mjs",
     "test:e2e": "playwright test",
     "format": "prettier --write public/*.js public/lib/*.js public/*.css public/*.html server/*.mjs scripts/*.mjs tests/*.mjs tests/e2e/*.js",
-    "verify": "npm run check && npm test && npm run build && npm run test:e2e"
+    "verify": "npm run check && npm test && npm run build && npm run test:e2e",
+    "prepare:classic": "node scripts/prepare-classic.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.56.1",

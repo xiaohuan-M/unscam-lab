@@ -192,7 +192,7 @@ export function createLearning(ctx) {
         .filter((d) => d.kind === "长文")
         .map(
           (d) =>
-            `<article class="panel"><span class="tag">深度阅读</span><h3>${esc(d.title)}</h3>${link("document:"+d.id,"阅读全文 →","text-link")}</article>`,
+            `<article class="panel"><span class="tag">深度阅读</span><h3>${esc(d.title)}</h3>${link("document:" + d.id, "阅读全文 →", "text-link")}</article>`,
         )
         .join(
           "",
@@ -342,15 +342,17 @@ export function createLearning(ctx) {
         "观察线索，再下判断。",
         "原项目两种玩法完整保留。新版分支故事继续支持本地和 AI 陪练；经典玩法保持原作规则。",
       ) +
-      `<div class="arcade-grid"><article class="arcade-card chat"><span class="eyebrow">CHAT SIMULATION</span><h2>别被骗了啊</h2><div class="arcade-symbol" aria-hidden="true">“？”</div><p>16 个事件池 · 每局 12 轮<br>随机身份、专属回应、逐层加码、结束复盘。</p>${link("classic:chat", "开始经典闯关 →", "button primary")}<details><summary>查看完整事件池</summary><ol>${c.events.map((e) => `<li>${esc(e.title)}</li>`).join("")}</ol></details></article><article class="arcade-card logic"><span class="eyebrow">LOGIC MYSTERY</span><h2>识骗迷局</h2><div class="arcade-symbol logic-symbol" aria-hidden="true">▦</div><p>2 个章节 · 12 个谜题<br>9×9 场景、人物定位、逻辑线索、两级提示。</p>${link("classic:logic", "打开推理档案 →", "button primary")}<details><summary>查看全部谜题</summary><ol>${c.puzzles.map((p) => `<li>${esc(p.title)} · ${link("article:" + p.article, "关联原文", "text-link")}</li>`).join("")}</ol></details></article></div><div class="notice">经典游戏中的数值、身份和剧情均为模拟。原作的复盘措辞与新版教学可能不同，现实问题请以可靠渠道核实。聊天闯关离开页面后会重新开局；推理结案进度保存在本机，并随新版学习备份导出。</div>${link("home", "体验新版分支故事与 AI 陪练 →")}`
+      `<div class="arcade-grid"><article class="arcade-card chat"><span class="eyebrow">CHAT SIMULATION</span><h2>别被骗了啊</h2><div class="arcade-symbol" aria-hidden="true">“？”</div><p>16 个事件池 · 每局 12 轮<br>随机身份、专属回应、逐层加码、结束复盘。</p>${link("classic:chat", "开始经典闯关 →", "button primary")}<details><summary>查看完整事件池</summary><ol>${c.events.map((e) => `<li>${esc(e.title)}</li>`).join("")}</ol></details></article><article class="arcade-card logic"><span class="eyebrow">LOGIC MYSTERY</span><h2>识骗迷局</h2><div class="arcade-symbol logic-symbol" aria-hidden="true">▦</div><p>2 个章节 · 12 个谜题<br>9×9 场景、人物定位、逻辑线索、两级提示。</p>${link("classic:logic", "打开推理档案 →", "button primary")}<details><summary>查看全部谜题</summary><ol>${c.puzzles.map((p) => `<li>${esc(p.title)} · ${link("article:" + p.article, "关联原文", "text-link")}</li>`).join("")}</ol></details></article></div><div class="notice">经典游戏中的数值、身份和剧情均为模拟。原作的复盘措辞与新版教学可能不同，现实问题请以可靠渠道核实。聊天闯关支持刷新续玩，当前局与最近 8 局的决定记录随备份导出；推理结案进度也会保存在本机。</div>${link("practice", "查看扩展分支练习 →")}`
     );
   }
   function classic(type) {
     if (!["chat", "logic"].includes(type)) return missing();
     const path = `./classic/${type}.html`;
+    if (type === "chat")
+      return `<iframe class="classic-frame original-game-frame" data-classic-chat title="原作微信式聊天闯关" src="${path}" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" loading="eager"></iframe>`;
     return (
       bar() +
-      `<div class="section-head"><h1>${type === "chat" ? "别被骗了啊 · 经典闯关" : "识骗迷局 · 逻辑推理"}</h1>${link("games", "← 返回游戏室")}</div><p class="hint">QERSSD 原作；适配站内导航与统一存档。需要更大操作空间可<a class="text-link" href="${path}" target="_blank" rel="noopener">单独打开游戏 ↗</a>。</p><iframe class="classic-frame" title="${type === "chat" ? "经典聊天闯关" : "识骗迷局"}" src="${path}" sandbox="allow-scripts allow-same-origin allow-modals allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" loading="eager"></iframe>`
+      `<div class="section-head"><h1>${type === "chat" ? "别被骗了啊 · 经典闯关" : "识骗迷局 · 逻辑推理"}</h1>${link("games", "← 返回游戏室")}</div><p class="hint">QERSSD 原作；适配站内导航与统一存档。需要更大操作空间可<a class="text-link" href="${path}" target="_blank" rel="noopener">单独打开游戏 ↗</a>。</p><iframe class="classic-frame" title="${type === "chat" ? "经典聊天闯关" : "识骗迷局"}" src="${path}" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" loading="eager"></iframe>`
     );
   }
   function glossary() {

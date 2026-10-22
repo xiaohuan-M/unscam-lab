@@ -1,540 +1,665 @@
-// 《别被骗了啊》v4：随机身份 + 随机事件 + 纯诱惑选择 + 结束后统一复盘
-(function(){
-'use strict';
-const EVENTS = window.EVENTS || [];
-
-const IDENTITIES = {
-  '学生党':   {icon:'🎓', money:8000,  alert:30, credit:85, family:60, tags:['学生','学生党','求职者','年轻人'], desc:'大学生，生活费不多，想搞点副业'},
-  '上班族':   {icon:'💼', money:150000,alert:40, credit:80, family:60, tags:['上班族','打工人','求职者'], desc:'工薪族，攒了几年钱'},
-  '宝妈':     {icon:'👶', money:60000, alert:35, credit:75, family:70, tags:['女性','宝妈'], desc:'在家带娃，想找副业'},
-  '退休老人': {icon:'🧓', money:300000,alert:20, credit:80, family:80, tags:['中老年','老人'], desc:'退休金 30 万'},
-  '商家店主': {icon:'🏪', money:120000,alert:38, credit:70, family:55, tags:['商家店主','老板'], desc:'经营一家小店'},
-  '负债人':   {icon:'💳', money:20000, alert:32, credit:40, family:40, tags:['负债人','欠债','年轻人'], desc:'背着债，急着翻身'},
-};
-
-const TOTAL_ROUNDS = 12;
-const START_MONEY = 10000;  // 全局初始钱包，不论什么身份都只有这一笔
-
-const S = {};
-let CUR = null;
-const ONLINE_HOME = 'https://qerssd.github.io/HowToAvoidScams/';
-const ONLINE_GAME = 'https://qerssd.github.io/HowToAvoidScams/game/';
-const IS_ONLINE = /^https?:$/.test(location.protocol) && /(^|\.)github\.io$/.test(location.hostname);
-// 线上直接回线上首页；本地双击时仍走相对路径
-const BACK_URL = '../index.html#games';
-
-// 每个选项的专属回应：stage 0=工具/真机会的两选项，1=正解，2=下沉局，3=加码轮
-function rp(stage, i, j){
-  const r = (window.REPLIES || {})[CUR && CUR.id] || {};
-  if(stage === 0) return (r.opt || [])[i] || '';
-  if(stage === 1) return r.ok || '';
-  if(stage === 2) return (r.s2 || [])[i] || '';
-  if(stage === 3){ const row = (r.esc || {})[j] || []; return row[i] || ''; }
-  if(stage === 9) return '你关掉了借款页面。对方连发三条："就差这一步，你甘心？"';
-  return '';
-}
-
-function rnd(){ return Math.random(); }
-function pickOne(arr){ return arr[Math.floor(rnd()*arr.length)]; }
-function shuffle(a){
-  const x=a.slice();
-  for(let i=x.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [x[i],x[j]]=[x[j],x[i]]; }
-  return x;
-}
-function el(html){ document.getElementById('app').innerHTML = html; window.scrollTo(0,0); }
-function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-function fmt(n){ return '¥' + Math.round(n).toLocaleString('zh-CN'); }
-function floatText(t,up){
-  const d=document.createElement('div'); d.className='float'; d.textContent=t;
-  d.style.color = up ? 'var(--brand)' : 'var(--danger)';
-  document.body.appendChild(d); setTimeout(()=>d.remove(),1300);
-}
-function toggleTheme(){
-  document.documentElement.classList.toggle('dark');
-  try{ localStorage.setItem('bbpl4_theme', document.documentElement.classList.contains('dark')?'d':'l'); }catch(e){}
-}
-try{ if(localStorage.getItem('bbpl4_theme')==='d') document.documentElement.classList.add('dark'); }catch(e){}
-
-/* ============ 开始页：选身份 ============ */
-function start(){
-  // 完全重置
-  for(const k in S) delete S[k];
-  el(`<h1 style="text-align:center;font-size:24px;margin:60px 0 12px">别被骗了啊</h1>
-  <p style="text-align:center;color:var(--muted);font-size:14px;line-height:2;margin:0 0 24px">
-    你有 <b style="color:var(--brand)">¥10,000</b>。<br>
-    随机给你推 12 个局，选错就扣钱。<br>
-    骗子会连续催你加码，顶住就赢。<br>
-    局中不告诉你对错——走完 12 局，一次性复盘你踩了哪些坑。
-  </p>
-  <div style="text-align:center;margin-top:18px">
-    <button class="btn primary" style="font-size:16px;padding:14px 32px" onclick="window.__G.nextRound()">🔕 手机响了，开始 →</button>
-  </div>
-  <div style="text-align:center;margin-top:14px">
-    <a class="back-link" href="${BACK_URL}" target="_top">📖 先看《人间防骗指南》373 篇拆解</a>
-  </div>
-  ${IS_ONLINE?`<div style="text-align:center;margin-top:10px;font-size:12px;color:var(--muted)">在线地址：<a href="${ONLINE_GAME}" style="color:var(--brand)">qerssd.github.io/HowToAvoidScams/game</a></div>`:''}
-  <footer>取材自《人间防骗指南》<br>遇真实诈骗：110 报案 · 96110 咨询</footer>`);
-}
-
-function begin(idKey){
-  const id = IDENTITIES[idKey];
-  S.identity = idKey;
-  S.money = START_MONEY; S.startMoney = START_MONEY;
-  S.alert = id.alert; S.credit = id.credit;
-  S.criminal = 0; S.family = id.family;
-  S.dealt = []; S.log = []; S.round = 0;
-  S.scammed = 0; S.identified = 0; S.lostTotal = 0;
-  S.chainPending = false; S.app = false; S.vacc = false;
-
-  el(`<div class="identity-card">
-    <div class="emoji">${id.icon}</div>
-    <div class="name">你现在是：${idKey}</div>
-    <div class="desc">${esc(id.desc)}<br>
-      钱包里有 <b>${fmt(S.money)}</b></div>
-  </div>
-  <p style="text-align:center;color:var(--muted);font-size:12px;line-height:1.9">
-    接下来随机给你推 ${TOTAL_ROUNDS} 个局。<br>
-    局中只给你看结果，对错和原因留到最后一次说清。<br>
-    <span style="color:var(--danger)">钱包输光就提前结束。</span>
-  </p>
-  <button class="btn primary" onclick="window.__G.nextRound()">🔕 手机响了，开始 →</button>`);
-}
-
-/* ============ 事件抽取：随机 + 身份权重 ============ */
-function pickEvent(){
-  // 连环追损优先（chain 事件可重复触发，不受 dealt 限制）
-  if(S.chainPending){
-    S.chainPending = false;
-    const c = EVENTS.find(e=>e.arch==='chain');
-    if(c) return c;
+import {
+  IDENTITIES,
+  newRun,
+  decide,
+  availableChoices,
+  currentEvent,
+  finishEarly,
+  snapshot,
+  restoreRun,
+  sanitizeClassic,
+  localResponse,
+} from "./engine.js";
+const $ = (s) => document.querySelector(s);
+const esc = (s) =>
+  String(s ?? "").replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+const fmt = (n) => "¥" + n.toLocaleString("zh-CN");
+const KEY = "unscam-v2";
+let data,
+  run = null,
+  view = "start",
+  extras = [],
+  proposed = null,
+  aiOn = false,
+  aiBusy = false,
+  aiRequest = 0,
+  aiTurns = 0;
+let speed = "natural",
+  playing = false,
+  sequence = 0,
+  waiters = [],
+  pending = [],
+  showOptions = true,
+  newMessages = false;
+let warning = "",
+  previousScene = null,
+  requestReject = null,
+  followLatest = true;
+const embed = window.parent !== window;
+const rootLink = (hash) => "../index.html#" + hash;
+function readSaved() {
+  try {
+    const value = JSON.parse(localStorage.getItem(KEY) || "{}");
+    return value && typeof value === "object" && !Array.isArray(value)
+      ? value
+      : {};
+  } catch {
+    return {};
   }
-  const pool = EVENTS.filter(e=>!S.dealt.includes(e.id) && e.arch!=='chain'
-    && !(e.arch==='tool'&&S.app) && !(e.arch==='familytool'&&S.vacc));
-  if(!pool.length) return null;
-  const best = pickOne(pool);
-  S.dealt.push(best.id);
-  return best;
 }
-
-/* ============ 场景渲染：拟物 ============ */
-function renderSceneHead(ev){
-  return `<div class="scene-head">
-    <span class="ch">${esc(ev.ch||'💬 消息')}</span>
-    <span class="meta">${esc(ev.meta||'')}</span>
-  </div>`;
+function classicSaved() {
+  return sanitizeClassic(readSaved().classic);
 }
-
-function isChatScene(ev){
-  const ch = ev.ch || '';
-  return ch.includes('群') || ch.includes('私信') || ch.includes('微信') || ch.includes('好友')
-      || ch.includes('闲鱼') || ch.includes('家庭群') || ch.includes('投资群');
+function toast(t) {
+  $("#game-toast").textContent = t;
+  $("#game-toast").classList.add("visible");
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(
+    () => $("#game-toast").classList.remove("visible"),
+    4200,
+  );
 }
-function isCallScene(ev){
-  const ch = ev.ch || '';
-  return ch.includes('来电') || ch.includes('电话');
-}
-function isSmsScene(ev){
-  const ch = ev.ch || '';
-  return ch.includes('短信') || ch.includes('通知');
-}
-function isLiveScene(ev){
-  const ch = ev.ch || '';
-  return ch.includes('直播');
-}
-
-function renderLines(ev){
-  const lines = ev.lines || [];
-  if(isCallScene(ev)){
-    // 来电界面 + 后续以"对方说"形式展开
-    const rest = lines.slice(1);
-    let html = `<div class="call">
-      <div class="from">来自：${esc(ev.meta||'未知号码')}</div>
-      <div class="num">${esc(lines[0]||'境外来电')}</div>
-      <div class="danger-tag">⚠️ 境外号码 · 标记为高频呼叫</div>
-      <div style="margin-top:14px;font-size:13px;color:#cfd8e3;line-height:1.8">对方在电话里说：</div>
-    </div>`;
-    rest.forEach(t=>{ html += `<div class="wx"><div class="wx-row"><div class="avatar">📞</div><div class="wx-bubble">${esc(t)}</div></div></div>`; });
-    return html;
+function save() {
+  if (!run) return;
+  try {
+    const root = readSaved(),
+      classic = sanitizeClassic(root.classic),
+      item = snapshot(run);
+    classic.current = item;
+    if (run.ended) {
+      classic.recent = classic.recent.filter((s) => s.seed !== item.seed);
+      classic.recent.push(item);
+      classic.recent = classic.recent.slice(-8);
+    }
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({
+        version: 3,
+        results: {},
+        reviews: {},
+        ...root,
+        classic,
+      }),
+    );
+    if (embed)
+      parent.postMessage(
+        { type: "UNSCAM_CLASSIC_UPDATED", classic },
+        location.origin,
+      );
+  } catch {
+    warning = "本机存储不可用，本次进度只保留到页面关闭。";
+    toast(warning);
   }
-  if(isLiveScene(ev)){
-    let html = `<div class="live">
-      <div class="room">● LIVE · 在线 ${Math.floor(2000+rnd()*30000)} 人</div>`;
-    lines.forEach((t,i)=>{
-      if(i===0) html += `<div class="host">🎙️ 主播：${esc(t)}</div>`;
-      else html += `<div class="host">🎙️ ${esc(t)}</div>`;
-    });
-    html += `<div class="danmu">
-      <span>@路过的人：上车了</span><span>@老粉：跟着老师稳</span><span>@小明：刚提现 5 万</span><br>
-      <span>@匿名：真的假的？</span><span>@理财小白：求带</span>
-    </div></div>`;
-    return html;
+}
+function pref(name, value) {
+  try {
+    const root = readSaved();
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({
+        version: 3,
+        results: {},
+        reviews: {},
+        ...root,
+        [name]: value,
+      }),
+    );
+    if (embed)
+      parent.postMessage(
+        {
+          type: "UNSCAM_CLASSIC_PREFERENCES",
+          theme: root.theme || "light",
+          large: !!root.large,
+          [name]: value,
+        },
+        location.origin,
+      );
+  } catch {}
+}
+function applyPrefs(root) {
+  document.documentElement.classList.toggle("dark", root.theme === "dark");
+  document.documentElement.classList.toggle("large", !!root.large);
+}
+function button(text, action, cls = "", attrs = "") {
+  return `<button class="btn ${cls}" data-game="${action}" ${attrs}>${text}</button>`;
+}
+function openDialog(html) {
+  $("#dialog-content").innerHTML = html;
+  $("#game-dialog").showModal();
+}
+function abortPlayback() {
+  sequence++;
+  playing = false;
+  for (const [timer, resolve] of waiters) {
+    clearTimeout(timer);
+    resolve(false);
   }
-  if(isSmsScene(ev)){
-    let html = `<div class="sms">`;
-    lines.forEach(t=>{
-      html += `<div class="sms-row"><div class="who">${esc(ev.ch||'通知')}</div><div class="b">${esc(t)}</div></div>`;
-    });
-    html += `</div>`;
-    return html;
+  waiters = [];
+  pending = [];
+}
+function delay(ms) {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      waiters = waiters.filter((w) => w[0] !== timer);
+      resolve(true);
+    }, ms);
+    waiters.push([timer, resolve]);
+  });
+}
+function cancelAI() {
+  aiRequest++;
+  if (aiBusy && embed)
+    parent.postMessage({ type: "UNSCAM_CLASSIC_CANCEL" }, location.origin);
+  aiBusy = false;
+  requestReject?.(Error("已取消"));
+  requestReject = null;
+}
+function leave() {
+  abortPlayback();
+  cancelAI();
+  save();
+  view = "start";
+  renderStart();
+}
+function history() {
+  const runs = classicSaved()
+    .recent.map((raw) => ({ raw, state: restoreRun(raw, data) }))
+    .filter((x) => x.state?.ended)
+    .reverse();
+  openDialog(
+    `<h2>过往复盘</h2><p>保留最近八次结束记录，也会进入学习备份。</p>${
+      runs.length
+        ? runs
+            .map(
+              ({ raw, state }) =>
+                `<details class="past-run"><summary>${new Date(raw.updated).toLocaleDateString("zh-CN")} · ${state.log.length} 段对话 · 损失 ${fmt(state.lostTotal)}</summary>${state.log
+                  .map((row) => {
+                    const e = data.events.find((e) => e.id === row.eid);
+                    return `<article><h3>${esc(e.title)}</h3><p>${row.choices.map(esc).join(" → ") || "暂停，未作选择"}</p><p>模拟损失 ${fmt(row.loss)}${row.control ? " · 账户 / 资料控制受影响" : ""}${row.risks.length ? " · " + row.risks.map(esc).join("；") : ""}</p><p>${esc(e.guard)}</p></article>`;
+                  })
+                  .join("")}</details>`,
+            )
+            .join("")
+        : "<p>完成一局或选择“现在结束并复盘”后，会在这里留下记录。</p>"
+    }`,
+  );
+}
+function menu() {
+  openDialog(
+    `<h2>稍微停一下</h2><p class="menu-hint">所有消息、转账和身份都是模拟。聊天输入与 Key 不写入存档。</p><div class="menu-links"><a href="${rootLink("learn")}" target="_top">学习资料 · 全部内容 ↗</a><a href="${rootLink("library")}" target="_top">373 篇原文知识库 ↗</a><a href="${rootLink("classic:logic")}" target="_top">识骗迷局 · 12 个谜题 ↗</a><a href="${rootLink("settings")}" target="_top">${aiOn ? "管理 LLM 与临时 Key" : "接入 LLM，启用 AI 回复"} ↗</a><a href="${rootLink("practice")}" target="_top">扩展的 16 个分支练习 ↗</a><a href="${rootLink("help")}" target="_top">现实中遇到问题，查看求助步骤 ↗</a></div>${button("过往复盘 · 最近八次", "history")}<div class="menu-controls">${button("切换明暗主题", "theme")}${button("切换大字模式", "font")}</div>${run && !run.ended ? button("保存，稍后继续", "pause") + button("现在结束并复盘", "finish") : ""}`,
+  );
+}
+function renderStart() {
+  abortPlayback();
+  view = "start";
+  document.body.dataset.page = "start";
+  const role = IDENTITIES.find((r) => r.id === run?.identity);
+  $("#app").innerHTML =
+    `<div class="start-screen"><div class="wechat-heading"><div><strong>别被骗了啊</strong><small>沿用原作玩法 · 微信式模拟</small></div><button class="more-button" data-game="menu" aria-label="打开游戏菜单">···</button></div><section class="original-intro"><div class="start-chat" aria-hidden="true"><div class="wx-row"><div class="avatar avatar-green">群</div><div class="wx-bubble">有个小忙，想请你帮一下。</div></div><div class="wx-row me"><div class="avatar">我</div><div class="wx-bubble">什么事？</div></div></div><h1>手机响了。</h1><p>你有 <b>${fmt(10000)}</b> 模拟资金。<br>接下来是十二段消息、来电与群聊。<br>照自己的判断回复，最后一起复盘。</p><p class="intro-note">有骗局，也有正常业务。可以随时停下。</p></section>
+ ${warning ? `<p class="storage-warning" role="status">${esc(warning)}</p>` : ""}
+ ${run && !run.ended ? `<section class="resume-card"><div><strong>上次的对话还在</strong><small>第 ${run.round + 1} / ${run.deck.length} 局 · ${esc(role?.name)} · ${fmt(run.money)}</small></div>${button("继续对话", "resume", "primary")}</section>` : ""}
+ <section class="start-controls"><label class="identity-label">这次的生活身份<select id="identity"><option value="random">随机身份</option>${IDENTITIES.map((r) => `<option value="${r.id}">${r.icon} ${r.name}</option>`).join("")}</select></label>${button("手机响了，开始 →", "start:challenge", "primary start-main")}${button("先玩 4 局热身", "start:warmup", "secondary")}<span class="small-note">所有身份都从 ¥10,000 开始 · 不需要 API Key</span></section>
+ <details class="scene-picker"><summary>练习一个指定场景 <span>原作 16 个</span></summary><div class="scene-list">${data.events.map((e) => button(`<span class="scene-kind">${e.channel === "call" ? "来电" : e.channel === "live" ? "直播" : e.channel === "sms" ? "短信" : e.channel === "offline" ? "现场" : "聊天"}</span>${esc(e.title)}`, "scene:" + e.id)).join("")}</div></details>
+ ${run?.ended ? button("查看上次复盘", "resume", "text-button") : ""}
+ <div class="start-links"><a href="${rootLink("learn")}" target="_top">原作全部资料 ↗</a><a href="${rootLink("settings")}" target="_top">${aiOn ? "AI 增强版已连接" : "接入 AI 增强版"} ↗</a></div><p class="attribution">基于 QERSSD / HowToAvoidScams · 虚构训练</p></div>`;
+}
+function begin(mode, scene = 1, confirmed = false) {
+  const identity = $("#identity")?.value || "random";
+  if (!confirmed && run && !run.ended) {
+    openDialog(
+      `<h2>重新开一局？</h2><p>当前对话会结束并保留复盘记录，新的一局重新从 ¥10,000 开始。</p>${button("结束当前对话，开始新局", "confirm:" + mode + ":" + scene + ":" + identity, "primary")}`,
+    );
+    return;
   }
-  // 默认：微信群聊
-  let html = `<div class="wx">`;
-  lines.forEach(t=>{
-    if(t.startsWith('§')){
-      html += `<div style="text-align:center;color:#999;font-size:11px;margin:10px 0">— ${esc(t.slice(1))} —</div>`;
-    } else {
-      html += `<div class="wx-row"><div class="avatar">👤</div><div class="wx-bubble">${esc(t)}</div></div>`;
+  startRun(mode, scene, identity);
+}
+function startRun(mode, scene, identity) {
+  abortPlayback();
+  cancelAI();
+  if (run && !run.ended) {
+    run = finishEarly(run);
+    save();
+  }
+  run = newRun(data, { mode, scene, identity });
+  extras = [];
+  aiTurns = 0;
+  previousScene = null;
+  proposed = null;
+  save();
+  renderChat(0);
+}
+function transcript() {
+  const out = [];
+  run.messages.forEach((m, i) => {
+    out.push(m);
+    out.push(...extras.filter((x) => x.after === i + 1).map((x) => x.message));
+  });
+  return out;
+}
+function sceneBanner(e) {
+  if (e.channel === "call")
+    return `<div class="call scene-banner"><div class="call-icon" aria-hidden="true">☎</div><strong>${esc(e.contact)}</strong><div class="voice-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><small>通话内容以文字呈现 · 模拟来电</small></div>`;
+  if (e.channel === "live")
+    return `<div class="live scene-banner"><span class="live-label">● 模拟 LIVE</span><strong>${esc(e.contact)}</strong><small>在线人数、评论和收益展示均为剧情</small><div class="danmu"><span>路过的人：先看看</span><span>老粉：跟一把？</span></div></div>`;
+  if (e.channel === "notice")
+    return `<div class="notice-origin">从原有 App 打开的通知 · 仍需核实具体规则</div>`;
+  if (e.channel === "offline")
+    return '<div class="notice-origin">现场对话以聊天记录呈现</div>';
+  return "";
+}
+function messageHTML(m, index, e) {
+  if (m.kind === "narration")
+    return `<div class="system-message message-entry" data-message-index="${index}">${esc(m.text)}</div>`;
+  if (m.kind === "transfer")
+    return `<div class="wx-row me message-entry" data-message-index="${index}"><div class="avatar">我</div><div class="transfer-bubble"><span aria-hidden="true">↗</span><div><strong>${fmt(m.amount)}</strong><small>模拟转出</small><span>不涉及真实账户</span></div></div></div>`;
+  const mine = m.kind === "mine",
+    sender = m.sender || e.speakers.at(-1) || e.contact;
+  return `<div class="wx-row ${mine ? "me" : ""} message-entry ${m.generated ? "ai-entry" : ""}" data-message-index="${index}"><div class="avatar ${mine ? "" : "avatar-" + (e.id % 4)}" aria-hidden="true">${mine ? "我" : esc((m.sender || e.avatar).slice(0, 1))}</div><div class="bubble-column">${mine ? "" : `<span class="sender-name">${esc(sender)}${m.local ? " · 预设回复" : m.generated ? " · AI 生成" : ""}</span>`}<div class="wx-bubble">${esc(m.text)}</div>${mine ? '<span class="sent-label">已发送 / 已选择</span>' : ""}</div></div>`;
+}
+function isNearBottom() {
+  const m = $("#chatMsgs");
+  return !m || m.scrollHeight - m.scrollTop - m.clientHeight < 65;
+}
+function scrollDown(force = false) {
+  const m = $("#chatMsgs");
+  if (!m) return;
+  if (force || isNearBottom()) {
+    m.scrollTop = m.scrollHeight;
+    newMessages = false;
+    followLatest = true;
+  } else newMessages = true;
+  $("#new-messages").hidden = !newMessages;
+}
+function renderBar() {
+  if (!$("#chatBar") || !run) return;
+  const choices = availableChoices(run, data),
+    isAfter = run.node === "after";
+  const selected = choices.find((c) => c.id === proposed);
+  $("#chatBar").innerHTML =
+    `${playing ? `<div class="delivery-controls"><span><i class="typing-dot"></i> 消息正在陆续到达</span>${button("立即看完", "skip", "skip-wait")}</div>` : ""}${selected ? `<div class="intent-confirm"><span>你想表达的是：</span>${button(esc(selected.text), "choice:" + selected.id, "intent-action", playing || aiBusy ? "disabled" : "")}<small>点击确认才会执行这个行动</small></div>` : ""}<div class="reply-panel ${showOptions ? "" : "collapsed"}"><div class="reply-label"><span>${isAfter ? "这段对话暂告一段落" : "你想怎么回复 / 行动？"}</span><span>${aiOn ? "AI 增强版" : "基础版"}</span></div><div class="reply-options" aria-label="回复选项">${choices.map((c) => button(esc(c.text), "choice:" + c.id, isAfter ? "primary" : "", `data-choice="${c.id}" ${playing || aiBusy ? "disabled" : ""}`)).join("")}</div></div>${isAfter ? "" : `<form id="classic-compose" class="wx-compose"><button type="button" class="compose-toggle" data-game="options" aria-label="展开或收起回复选项" aria-expanded="${showOptions}">⌨</button><label class="sr-only" for="classic-message">自己回复一句</label><textarea id="classic-message" rows="1" maxlength="600" placeholder="自己回复一句…" ${playing || aiBusy ? "disabled" : ""}></textarea><button type="submit" class="send-button" ${playing || aiBusy ? "disabled" : ""}>发送</button></form><div class="compose-note">${aiBusy ? `正在等待 AI 回复 ${button("取消", "cancel-ai", "text-button")}` : aiOn ? "AI 生成内容仅供练习 · 不输入真实个人信息" : "基础版使用预设回复，分支选择照常可玩"}</div>`}`;
+}
+function renderChat(from = 0) {
+  if (run.ended) {
+    renderReview();
+    return;
+  }
+  const oldLog = $("#chatMsgs"),
+    oldTop = oldLog?.scrollTop || 0,
+    follow = isNearBottom();
+  abortPlayback();
+  view = "chat";
+  document.body.dataset.page = "chat";
+  const e = currentEvent(run, data);
+  if (previousScene !== run.round) {
+    extras = [];
+    aiTurns = 0;
+    from = 0;
+    previousScene = run.round;
+  }
+  const all = transcript();
+  $("#app").innerHTML =
+    `<div class="chat-wrap"><div class="game-wallet"><span>模拟钱包 <b>${fmt(run.money)}</b>${run.debt ? `<small> · 借款 ${fmt(run.debt)}</small>` : ""}</span><span>第 ${run.round + 1} / ${run.deck.length} 局</span></div><div class="wechat-heading"><button class="back-button" data-game="pause" aria-label="保存并离开对话">‹</button><div class="contact-title"><strong>${esc(e.contact)}</strong><small id="contact-status">${esc(e.context)}</small></div><button class="more-button" data-game="menu" aria-label="打开游戏菜单">···</button></div><div class="pace-bar"><span>虚构情境</span><label>消息节奏 <select id="message-speed" aria-label="消息节奏"><option value="natural" ${speed === "natural" ? "selected" : ""}>自然</option><option value="fast" ${speed === "fast" ? "selected" : ""}>快速</option><option value="instant" ${speed === "instant" ? "selected" : ""}>即显</option></select></label></div><div class="messages-area"><div class="chat-msgs channel-${e.channel}" id="chatMsgs" role="log" aria-label="微信模拟对话" aria-live="polite" aria-relevant="additions text" tabindex="0">${sceneBanner(e)}${all
+      .slice(0, from)
+      .map((m, i) => messageHTML(m, i, e))
+      .join(
+        "",
+      )}</div><button id="new-messages" class="new-messages" data-game="latest" hidden>有新消息 ↓</button></div><div class="chat-bar" id="chatBar"></div></div>`;
+  $("#chatMsgs").scrollTop = follow ? $("#chatMsgs").scrollHeight : oldTop;
+  $("#chatMsgs").addEventListener("scroll", () => {
+    followLatest = isNearBottom();
+    if (followLatest) {
+      newMessages = false;
+      $("#new-messages").hidden = true;
     }
   });
-  html += `</div>`;
-  return html;
+  deliver(all.slice(from), from, e, follow);
 }
-
-/* ============ 回合流程：聊天窗口 ============ */
-function scrollDown(){
-  const m = document.getElementById('chatMsgs');
-  if(m) m.scrollTop = m.scrollHeight;
-}
-function appendMsg(html){
-  const m = document.getElementById('chatMsgs');
-  if(m){ m.insertAdjacentHTML('beforeend', html); scrollDown(); }
-}
-function myBubble(text){
-  return `<div class="wx-row me"><div class="avatar">我</div><div class="wx-bubble">${esc(text)}</div></div>`;
-}
-
-function barHTML(){
-  return `<div class="topbar">
-      <span>💰 <b style="${S.money<0?'color:var(--danger)':''}">${fmt(S.money)}</b></span>
-      <span>🧠 ${S.alert}</span>
-      <span>⚖️ ${S.criminal}</span>
-      <a class="top-link" href="${BACK_URL}" target="_top" title="回到《人间防骗指南》">📖 指南</a>
-      <button onclick="toggleTheme()">${document.documentElement.classList.contains('dark')?'☀️':'🌙'}</button>
-    </div>`;
-}
-
-function nextRound(){
-  // 第一次进来初始化钱包
-  if(typeof S.money !== 'number'){
-    S.money = START_MONEY; S.startMoney = START_MONEY;
-    S.alert = 40; S.criminal = 0; S.credit = 80;
-    S.dealt = []; S.log = []; S.round = 0;
-    S.scammed = 0; S.identified = 0; S.lostTotal = 0;
-    S.chainPending = false; S.app = false; S.vacc = false;
+async function deliver(messages, from, e, follow) {
+  const token = sequence;
+  playing = messages.length > 0;
+  pending = messages.map((m, i) => ({ m, index: from + i }));
+  renderBar();
+  if (follow) scrollDown(true);
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  for (const { m, index } of [...pending]) {
+    if (token !== sequence || view !== "chat") return;
+    const instant = speed === "instant" || reduced;
+    if (!instant && m.kind === "incoming") {
+      $("#contact-status").textContent =
+        e.channel === "call" ? "对方继续说…" : "对方正在输入…";
+      const near = isNearBottom();
+      $("#chatMsgs").insertAdjacentHTML(
+        "beforeend",
+        `<div class="wx-row typing-row" aria-label="对方正在输入"><div class="avatar avatar-${e.id % 4}" aria-hidden="true">${esc(e.avatar)}</div><div class="wx-bubble typing-bubble" aria-hidden="true"><i></i><i></i><i></i></div></div>`,
+      );
+      if (near) scrollDown(true);
+    }
+    const wait = instant
+      ? 0
+      : m.kind === "mine"
+        ? 120
+        : m.kind === "incoming"
+          ? speed === "fast"
+            ? 170
+            : Math.min(1500, 500 + m.text.length * 13)
+          : 180;
+    if (wait && !(await delay(wait))) return;
+    if (token !== sequence || view !== "chat") return;
+    const near = isNearBottom();
+    $(".typing-row")?.remove();
+    $("#chatMsgs").insertAdjacentHTML("beforeend", messageHTML(m, index, e));
+    if (!instant && m.kind !== "narration")
+      $("#chatMsgs").lastElementChild.classList.add("message-arrive");
+    if (near || follow) {
+      scrollDown(true);
+      follow = false;
+    } else {
+      newMessages = true;
+      $("#new-messages").hidden = false;
+    }
+    pending.shift();
   }
-  if(typeof S.round !== 'number') S.round = 0;
-  // 结束条件：钱输光 / 12 局走完 —— 都只在最后给解析
-  if(S.money <= 0) return ending();
-  if(S.round >= TOTAL_ROUNDS) return review();
-  const ev = pickEvent();
-  if(!ev){
-    el(`<div class="card" style="text-align:center;padding:30px">
-      <h2>所有骗局都遇到过了</h2>
-      <p style="color:var(--muted);font-size:13px">看总结吧。</p>
-      <button class="btn primary" onclick="window.__G.review()">📋 看总结 →</button>
-      <button class="btn" onclick="window.__G.start()">🔄 重新开始</button>
-    </div>`);
+  if (token !== sequence) return;
+  const stick = isNearBottom();
+  playing = false;
+  $("#contact-status").textContent = e.context;
+  renderBar();
+  if (stick) scrollDown(true);
+}
+function skip() {
+  const e = currentEvent(run, data),
+    items = [...pending],
+    near = isNearBottom();
+  abortPlayback();
+  $(".typing-row")?.remove();
+  for (const { m, index } of items)
+    $("#chatMsgs").insertAdjacentHTML("beforeend", messageHTML(m, index, e));
+  $("#contact-status").textContent = e.context;
+  renderBar();
+  if (near) scrollDown(true);
+  else {
+    $("#new-messages").hidden = false;
+    newMessages = true;
+  }
+}
+function choose(id) {
+  if (playing || aiBusy || !run || run.ended) return;
+  const from = transcript().length,
+    round = run.round;
+  try {
+    run = decide(run, data, id);
+  } catch (e) {
+    toast(e.message);
     return;
   }
-  CUR = ev; CUR.li = 0; CUR._escalate = 0;
-
-  el(`<div class="chat-wrap">
-    ${barHTML()}
-    <div style="text-align:center;color:var(--muted);font-size:11px;letter-spacing:2px;margin:6px 0">
-      第 ${Math.min(S.round+1, TOTAL_ROUNDS)} / ${TOTAL_ROUNDS} 局
-    </div>
-    <div class="chat-msgs" id="chatMsgs">
-      ${ev.arch==='chain' ? `<div style="text-align:center;color:var(--muted);font-size:11px;margin:8px 0">— 当晚，一个陌生好友主动加了你 —</div>` : ''}
-      ${renderLines(ev)}
-    </div>
-    <div class="chat-bar" id="chatBar"></div>
-  </div>`);
-  scrollDown();
-  showChoices();
+  proposed = null;
+  showOptions = true;
+  if (run.round !== round) {
+    extras = [];
+    aiTurns = 0;
+  }
+  save();
+  renderChat(run.round !== round ? 0 : from);
 }
-
-function showChoices(){
-  const bar = document.getElementById('chatBar');
-  if(CUR.arch==='real'){
-    bar.innerHTML = `
-      <button class="btn" onclick="window.__G.onReal(true,'${esc(CUR.hook_label||'走官方渠道试试').replace(/'/g,"\\'")}')">${esc(CUR.hook_label||'走官方渠道试试')}</button>
-      <button class="btn" onclick="window.__G.onReal(false,'太麻烦，算了')">太麻烦，算了</button>`;
+function reviewItem(row, i) {
+  const e = data.events.find((e) => e.id === row.eid),
+    risky = row.loss || row.control || row.risks.length,
+    answer = run.answers[i];
+  return `<article class="rv ${risky ? "bad" : ""}"><div class="review-row-head"><span>第 ${i + 1} 局</span><span>${row.outcome === "recovered" ? "中途停下了" : risky ? "值得回练" : row.outcome === "verified" ? "完成独立核实" : "暂停或暂不办理"}</span></div><h2>${esc(e.title)}</h2><p class="review-decisions">${row.choices.map(esc).join(" → ") || "尚未选择，已暂停"}</p><div class="review-effects"><span>资金损失 ${fmt(row.loss)}</span>${row.control ? "<span>账户 / 资料控制受影响</span>" : ""}${row.risks.map((r) => `<span>${esc(r)}</span>`).join("")}</div><h3>这段对话里，哪里值得留意？</h3><p>${esc(e.why)}</p><blockquote>${esc(e.guard)}</blockquote><details class="transfer-question"><summary>换个情况，再判断一次</summary><p>${esc(e.transfer.question)}</p>${e.transfer.options.map((t, j) => button(esc(t), "answer:" + i + ":" + j, "", answer !== undefined ? "disabled" : "")).join("")}${answer !== undefined ? `<p role="status">${answer === e.transfer.answer ? "这次判断正确。" : "可以再想想这个核实动作。"}${esc(e.guard)}</p>` : ""}</details><div class="review-links">${button("重玩这个场景", "scene:" + e.id, "text-button")}<a href="${rootLink("library")}" target="_top">查原文与来源 ↗</a></div></article>`;
+}
+function renderReview() {
+  abortPlayback();
+  cancelAI();
+  view = "review";
+  document.body.dataset.page = "review";
+  const risks = run.log.filter(
+    (r) => r.loss || r.control || r.risks.length,
+  ).length;
+  $("#app").innerHTML =
+    `<div class="review-screen"><div class="wechat-heading"><button class="back-button" data-game="pause" aria-label="返回开始页">‹</button><strong>回看刚才的聊天</strong><button class="more-button" data-game="menu" aria-label="打开游戏菜单">···</button></div><section class="review-intro"><span class="small-note">${run.log.length} 段对话 · ${run.mode === "scene" ? "指定场景" : run.mode === "warmup" ? "四局热身" : "十二局挑战"}</span><h1>${run.money <= 0 ? "这次，钱包见底了。" : risks ? "及时停下，也是一种进步。" : "把这次判断，带到下一条消息里。"}</h1><p>这是一场模拟。受骗不代表不够聪明，分数也不能证明现实中的防骗能力。</p><div class="kpis"><div class="kpi"><b>${fmt(run.money)}</b><span>剩余模拟资金</span></div><div class="kpi"><b>${fmt(run.lostTotal)}</b><span>累计模拟损失</span></div><div class="kpi"><b>${run.debt ? fmt(run.debt) : risks}</b><span>${run.debt ? "待还模拟借款" : "值得再练的场景"}</span></div></div>${button("再来十二局", "start:challenge", "primary")}</section>${run.log.map(reviewItem).join("")}<div class="review-footer">${button("返回开始页", "pause")}<a href="${rootLink("learn")}" target="_top">查看全部学习资料 ↗</a></div></div>`;
+}
+function addExtra(message) {
+  extras.push({ after: run.messages.length, message });
+}
+async function sendMessage(event) {
+  event.preventDefault();
+  if (playing || aiBusy || run.ended) return;
+  const input = $("#classic-message"),
+    text = input.value.trim();
+  if (!text) return;
+  if (
+    text.length > 600 ||
+    /\b\d{6,}\b|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|(?:sk-|api[_-]?key\s*[:=])\S{8,}/i.test(
+      text,
+    )
+  ) {
+    toast("请只讨论虚构情境，移除真实号码、邮箱、验证码或密钥。");
     return;
   }
-  if(CUR.arch==='tool'){
-    bar.innerHTML = `
-      <button class="btn" onclick="window.__G.onTool(true,'📱 当场安装')">📱 当场安装</button>
-      <button class="btn" onclick="window.__G.onTool(false,'不用了，我小心点')">不用了，我小心点</button>`;
-    return;
-  }
-  if(CUR.arch==='familytool'){
-    bar.innerHTML = `
-      <button class="btn" onclick="window.__G.onFamily(true,'💉 转到家庭群')">💉 转到家庭群</button>
-      <button class="btn" onclick="window.__G.onFamily(false,'下次再说')">下次再说</button>`;
-    return;
-  }
-  // 骗局卡：1 正解 + 3 迷惑项，打散。每个 distractor 带自己的 back（对方回应）
-  const opts = [{t:CUR.correct, ok:true, back:null, src:0}]
-    .concat((CUR.distractors||[]).map((d,di)=>({t:d.t, ok:false, back:d.back, src:di+1})));
-  const mixed = shuffle(opts);
-  mixed.forEach((o,i)=>{ o._i = i; });
-  bar.innerHTML = mixed.map(o=>
-    `<button class="btn" data-ok="${o.ok?1:0}" data-i="${o._i}" data-src="${o.src}" onclick="window.__G.pick(${o.ok?1:0},'${esc(o.t).replace(/'/g,"\\'")}', ${o._i})">${esc(o.t)}</button>`).join('');
-  CUR._mixed = mixed;
-}
-
-function onReal(ok, choiceText){
-  appendMsg(myBubble(choiceText));
-  const reply = rp(0, ok?0:1);
-  if(ok){ S.money += 200; S.alert += 3; floatText('+¥200', true); }
-  appendMsg(`<div class="wx-row"><div class="avatar">${ok?'📱':'🚶'}</div><div class="wx-bubble">${esc(reply)}</div></div>`);
-  S.log.push({title:CUR.title, cat:CUR.cat, arch:CUR.arch,
-    choice: choiceText, result: reply,
-    correct: CUR.hook_label||CUR.correct, bad:!ok, guard:CUR.guard, news:CUR.news, loss:0});
-  showAfterTurn();
-}
-function onTool(ok, choiceText){
-  appendMsg(myBubble(choiceText));
-  const reply = rp(0, ok?0:1);
-  if(ok){ S.app = true; S.alert += 6; floatText('装备+1', true); }
-  appendMsg(`<div class="wx-row"><div class="avatar">${ok?'📱':'🚶'}</div><div class="wx-bubble">${esc(reply)}</div></div>`);
-  S.log.push({title:CUR.title, cat:CUR.cat, arch:CUR.arch,
-    choice: choiceText, result: reply,
-    correct:'当场安装', bad:!ok, guard:CUR.guard, news:CUR.news, loss:0});
-  showAfterTurn();
-}
-function onFamily(ok, choiceText){
-  appendMsg(myBubble(choiceText));
-  const reply = rp(0, ok?0:1);
-  if(ok){ S.vacc = true; S.family = Math.min(100,S.family+15); }
-  appendMsg(`<div class="wx-row"><div class="avatar">${ok?'👨‍👩‍👧':'🚶'}</div><div class="wx-bubble">${esc(reply)}</div></div>`);
-  S.log.push({title:CUR.title, cat:CUR.cat, arch:CUR.arch,
-    choice: choiceText, result: reply,
-    correct:'转到家庭群', bad:!ok, guard:CUR.guard, news:CUR.news, loss:0});
-  showAfterTurn();
-}
-
-function pick(ok, choiceText, mi){
-  appendMsg(myBubble(choiceText));
-  // 找到这个选项对应的对方回应
-  const picked = (CUR._mixed||[])[mi] || null;
-  const back = picked && picked.back ? picked.back : '';
-
-  // 反诈 App 拦截
-  if(!ok && S.app && ['authority','refund','parttime','chain'].includes(CUR.arch) && rnd()<0.4){
-    S.log.push({title:CUR.title, cat:CUR.cat, arch:CUR.arch,
-      choice:choiceText, result:'手机弹出预警，没转成账。',
-      correct:CUR.correct, bad:false, guard:CUR.guard, news:CUR.news, loss:0});
-    appendMsg(`<div class="wx-row"><div class="avatar">📱</div><div class="wx-bubble">反诈 App 预警：这个号码被标记为涉诈。</div></div>`);
-    floatText('📱 拦截', true);
-    showAfterTurn('继续 →');
-    return;
-  }
-  if(ok){
-    S.identified++; S.alert += CUR.alert_win||8;
-    const reply = rp(1);
-    S.log.push({title:CUR.title, cat:CUR.cat, arch:CUR.arch,
-      choice:choiceText, result: reply,
-      correct:CUR.correct, bad:false, guard:CUR.guard, news:CUR.news, loss:0});
-    appendMsg(`<div class="wx-row"><div class="avatar">✅</div><div class="wx-bubble">${esc(reply)}</div></div>`);
-    showAfterTurn('继续 →');
-    return;
-  }
-  // 选错 → 用这个选项专属的对方回应
-  appendMsg(`<div class="wx-row"><div class="avatar">👤</div><div class="wx-bubble">${esc(back)}</div></div>`);
-  showStage2();
-}
-
-function showStage2(){
-  const bar = document.getElementById('chatBar');
-  const opts = (CUR.s2opts||[]).map((o,i)=>({t:o[0], m:o[1], i:i}));
-  bar.innerHTML = `<p style="font-size:12px;color:var(--muted);margin:0 0 4px">${esc(CUR.s2prompt||'现在怎么办：')}</p>` +
-    shuffle(opts).map(o=>
-      `<button class="btn" data-stage="2" data-i="${o.i}" onclick="window.__G.trap(${o.m},'${esc(o.t).replace(/'/g,"\\'")}',2,${o.i})">${esc(o.t)}</button>`).join('');
-  scrollDown();
-}
-
-function showAfterTurn(){
-  // 局中不解析：只让玩家看到"结果"，对错与原因全部留到最后的复盘
-  const bar = document.getElementById('chatBar');
-  bar.innerHTML = `<button class="btn primary" onclick="window.__G.afterTurn()">继续 →</button>`;
-  scrollDown();
-}
-
-function afterTurn(){
-  S.round = (S.round||0) + 1;
-  nextRound();
-}
-
-function trap(loss, label, stage, i, step){
-  appendMsg(myBubble(label));
-  loss = Math.max(0, Math.round(loss));
-
-  // 钱不够 → 弹出借钱选择，不直接扣
-  if(loss > S.money && loss > 0){
-    appendMsg(`<div class="wx-row"><div class="avatar">💳</div><div class="wx-bubble">对方发来借钱链接："钱不够没关系，我们有合作的借款平台，秒到账。"</div></div>`);
-    const bar = document.getElementById('chatBar');
-    bar.innerHTML = `<p style="font-size:12px;color:var(--danger);margin:0 0 4px">你还差 ${fmt(loss - S.money)}：</p>
-      <button class="btn" onclick="window.__G.borrowAndTrap(${loss},'${esc(label).replace(/'/g,"\\'")}',${stage},${i},${step==null?'null':step})">借钱补窟窿（借 ${fmt(loss - S.money)}）</button>
-      <button class="btn" onclick="window.__G.trap(0,'不借了，止损',9)">不借了，止损</button>`;
-    scrollDown();
-    return;
-  }
-
-  doTrap(loss, label, false, rp(stage, i, step));
-}
-
-function borrowAndTrap(loss, label, stage, i, step){
-  appendMsg(myBubble(`借钱补窟窿`));
-  const short = Math.max(0, loss - S.money);
-  S.money += short;              // 借来的钱先到账，再被对方拿走
-  S.debt = (S.debt||0) + short;
-  doTrap(loss, label, true, rp(stage, i, step));
-}
-
-function doTrap(loss, label, borrowed, reply){
-  const ev = CUR;
-  S.money -= loss; S.lostTotal += loss; S.alert += 2;
-  if(loss>0) floatText('-'+fmt(loss), false);
-  if(ev.criminal) S.criminal += ev.criminal;
-  if(ev.credit) S.credit = Math.max(0, S.credit + ev.credit);
-
-  // 这个选项专属的现场回应（不写分析，分析留到复盘）
-  appendMsg(`<div class="wx-row"><div class="avatar">${loss>0?'💸':'🚪'}</div><div class="wx-bubble">${esc(reply)}</div></div>`);
-
-  // 同一个局里被连续加码：只记一条，损失累加（复盘按"局"计，不按点击次数计）
-  const last = S.log[S.log.length-1];
-  if(last && last.eid === ev.id){
-    last.loss += loss;
-    last.choice += ' → ' + label;
-    last.result = (last.result ? last.result + ' ' : '') + reply;
-    if(loss > 0) last.bad = true;
+  const before = transcript().length,
+    e = currentEvent(run, data),
+    node = run.node,
+    round = run.round;
+  addExtra({ text, kind: "mine" });
+  input.value = "";
+  const history = extras
+    .slice(0, -1)
+    .slice(-6)
+    .map((x) => ({
+      role: x.message.kind === "mine" ? "user" : "assistant",
+      content: x.message.text,
+    }));
+  let result;
+  if (aiOn && embed && aiTurns < 8) {
+    aiBusy = true;
+    aiTurns++;
+    renderChat(before);
+    const id = ++aiRequest;
+    try {
+      result = await new Promise((resolve, reject) => {
+        requestReject = (error) => {
+          cleanup();
+          reject(error);
+        };
+        const timeout = setTimeout(() => {
+          cleanup();
+          reject(Error("模型回复超时"));
+        }, 26000);
+        const cleanup = () => {
+          clearTimeout(timeout);
+          window.removeEventListener("message", receive);
+          requestReject = null;
+        };
+        const receive = (ev) => {
+          if (
+            ev.source !== parent ||
+            ev.origin !== location.origin ||
+            ev.data?.type !== "UNSCAM_CLASSIC_REPLY" ||
+            ev.data.id !== id
+          )
+            return;
+          cleanup();
+          if (ev.data.error) reject(Error(ev.data.error));
+          else resolve(ev.data.result);
+        };
+        window.addEventListener("message", receive);
+        parent.postMessage(
+          {
+            type: "UNSCAM_CLASSIC_CHAT",
+            id,
+            body: { scenario: "classic:" + e.id, node, message: text, history },
+          },
+          location.origin,
+        );
+      });
+    } catch (error) {
+      if (id !== aiRequest || view !== "chat") return;
+      toast("AI 暂不可用，已提供本地回复，仍可继续选择。");
+      result = localResponse(e, availableChoices(run, data), text);
+    } finally {
+      if (id === aiRequest) aiBusy = false;
+    }
+    if (
+      id !== aiRequest ||
+      run.round !== round ||
+      run.node !== node ||
+      view !== "chat"
+    )
+      return;
   } else {
-    if(loss > 0) S.scammed++;
-    S.log.push({eid:ev.id, title:ev.title, cat:ev.cat, arch:ev.arch,
-      choice:label, result:reply, correct:ev.correct, bad:loss>0,
-      guard:ev.guard, news:ev.news, loss:loss});
+    if (aiOn && aiTurns >= 8)
+      toast("本段对话的 AI 追问已用完，继续使用本地回复。");
+    result = localResponse(e, availableChoices(run, data), text);
   }
-
-  if(loss>0){
-    appendMsg(`<div class="wx-row"><div class="avatar">🏦</div><div class="wx-bubble">账户少了 <b>${fmt(loss)}</b>${borrowed?`（其中 <b style="color:var(--danger)">借的钱</b>）`:''}。</div></div>`);
+  const from =
+    $("#chatMsgs .message-entry")?.parentElement?.querySelectorAll(
+      ".message-entry",
+    ).length || before;
+  if (typeof result?.reply !== "string" || result.reply.length > 800) {
+    toast("回复格式无效，可继续选择行动。");
+    renderBar();
+    return;
   }
-
-  // 更新顶部钱显示
-  const topbar = document.querySelector('.topbar');
-  if(topbar) topbar.outerHTML = barHTML();
-
-  // 止损：这一局到此为止
-  if(loss === 0){ showAfterTurn(); return; }
-
-  // 层层加码：每个局都写好了两轮，每轮两个选项各有自己的回应
-  CUR._escalate = (CUR._escalate || 0) + 1;
-  if(CUR._escalate <= (ev.escalate||[]).length){
-    showEscalate();
-  } else {
-    blackout();
+  addExtra({
+    text: result.reply,
+    kind: "incoming",
+    generated: !!result.generated,
+    local: !result.generated,
+  });
+  proposed = availableChoices(run, data).some(
+    (c) => c.id === result.suggestedActionId,
+  )
+    ? result.suggestedActionId
+    : null;
+  renderChat(from);
+}
+$("#app").addEventListener("submit", (e) => {
+  if (e.target.id === "classic-compose") sendMessage(e);
+});
+document.addEventListener("click", (e) => {
+  const target = e.target.closest("[data-game]");
+  if (!target || target.disabled) return;
+  const [action, a, b, c] = target.dataset.game.split(":");
+  if (action === "menu") return menu();
+  if (action === "history") {
+    $("#game-dialog").close();
+    return history();
   }
-}
-
-function blackout(){
-  appendMsg(`<div class="wx-row"><div class="avatar">🚫</div><div class="wx-bubble">对方把你拉黑了，群也把你踢了。</div></div>`);
-  if(rnd() < 0.6){
-    S.chainPending = true;
-    appendMsg(`<div class="wx-row"><div class="avatar">📱</div><div class="wx-bubble">当晚，一个陌生好友加了你："看到你之前报过案，我们专做追损，先帮你追回再说。"</div></div>`);
+  if (action === "skip") return skip();
+  if (action === "latest") return scrollDown(true);
+  if (action === "pause") {
+    $("#game-dialog").close();
+    leave();
+    return;
   }
-  showAfterTurn();
-}
-
-function showEscalate(){
-  const round = CUR._escalate;                       // 1,2（每个局都写满了，不用兜底话术）
-  const bar = document.getElementById('chatBar');
-  const step = (CUR.escalate || [])[round-1];
-  if(!step){ return blackout(); }
-  appendMsg(`<div class="wx-row"><div class="avatar">👤</div><div class="wx-bubble">${esc(step.back)}</div></div>`);
-  const opts = step.opts.map((o,i)=>({t:o[0], m:o[1], i:i}));
-  bar.innerHTML = `<p style="font-size:12px;color:var(--muted);margin:0 0 4px">对方还在催（第 ${round} 轮）：</p>` +
-    shuffle(opts).map(o=>
-      `<button class="btn" data-stage="3" data-i="${o.i}" onclick="window.__G.trap(${o.m},'${esc(o.t).replace(/'/g,"\\'")}',3,${o.i},${round-1})">${esc(o.t)}</button>`).join('');
-  scrollDown();
-}
-
-/* ============ 结局（钱输光） + 复盘 ============ */
-function ending(){
-  const bad = S.log.filter(l=>l.bad);
-  const ok = S.log.filter(l=>!l.bad);
-  el(`<h1 style="text-align:center;margin:24px 0 6px">💸 钱包输光了</h1>
-  <p style="text-align:center;color:var(--muted);font-size:13px">从 ${fmt(START_MONEY)} 到 ${fmt(Math.max(0,S.money))}${S.debt?` · 还欠 ${fmt(S.debt)}`:''}</p>
-  <div style="text-align:center;margin:14px 0"><span class="badge bad">「被割了」</span></div>
-  <div class="kpis">
-    <div class="kpi"><b style="color:var(--danger)">${bad.length}</b><span>中招次数</span></div>
-    <div class="kpi"><b style="color:var(--brand)">${ok.length}</b><span>顶住次数</span></div>
-    <div class="kpi"><b style="color:var(--danger)">${fmt(S.lostTotal)}</b><span>累计损失</span></div>
-    <div class="kpi"><b>${S.criminal}</b><span>刑责分</span></div>
-  </div>
-  <div style="margin:16px 0">
-    <h3 style="font-size:15px;margin-bottom:8px">你参与的骗局：</h3>
-    ${S.log.map((l,i)=>`<div class="rv ${l.bad?'bad':''}">
-      <b>${i+1}. ${esc(l.title)}</b>
-      <div style="font-size:12px;color:var(--muted);margin:2px 0">${esc(l.cat||'')}</div>
-      <div>你选的：<span class="${l.bad?'no':'ok'}">${esc(l.choice)}</span></div>
-      ${l.bad ? `<div style="margin-top:4px">正确做法：<span class="ok">${esc(l.correct)}</span></div>` : ''}
-      <span class="gd">📌 ${esc(l.guard||'')}</span>
-    </div>`).join('')}
-  </div>
-  <div style="display:flex;gap:10px;margin-top:14px">
-    <button class="btn primary" onclick="window.__G.start()">🔄 再来一次（重置 ¥${START_MONEY.toLocaleString()}）</button>
-  </div>
-  <div style="text-align:center;margin-top:12px"><a class="back-link" href="${BACK_URL}" target="_top">📖 回到《人间防骗指南》</a></div>
-  <footer>取材自《人间防骗指南》· 遇真实诈骗：110 / 96110</footer>`);
-}
-
-function review(){
-  const bad = S.log.filter(l=>l.bad);
-  const ok = S.log.filter(l=>!l.bad);
-  const g = {};
-  bad.forEach(l=>{ const c=l.cat||'其他'; g[c]=g[c]||{n:0,s:0}; g[c].n++; g[c].s+=(l.loss||0); });
-  const top = Object.entries(g).sort((a,b)=>b[1].s-a[1].s).slice(0,3);
-  let summary = '';
-  if(!bad.length){
-    summary = `<div style="font-size:14px;line-height:1.9">✅ ${S.round} 个局，你一次都没上钩。<br>
-      下面每一条，都是你当时顶住的那个瞬间——记住它，现实里用得上。</div>`;
-  } else {
-    summary = `<div style="font-size:14px;line-height:1.9">
-      ❌ 你中招了 <b style="color:var(--danger)">${bad.length}</b> 次，共损失 <b style="color:var(--danger)">${fmt(S.lostTotal)}</b>。<br>
-      下面每一条，告诉你当时该怎么做。</div>
-      ${top.length?`<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;line-height:2">
-        <b>你差在哪：</b><br>${top.map(([c,v])=>`· 「${esc(c)}」栽了 ${v.n} 次${v.s?`，亏 ${fmt(v.s)}`:''}`).join('<br>')}
-        <br><span style="color:var(--muted)">补课顺序就按上面的排序来。</span></div>`:''}`;
+  if (action === "finish") {
+    $("#game-dialog").close();
+    abortPlayback();
+    cancelAI();
+    run = finishEarly(run);
+    save();
+    renderReview();
+    return;
   }
-  const rows = S.log.map((l,i)=>`<div class="rv ${l.bad?'bad':''}">
-    <b>${i+1}. ${esc(l.title)}</b>
-    <div style="font-size:12px;color:var(--muted);margin:2px 0">${esc(l.cat||'')}</div>
-    <div>你选的：<span class="${l.bad?'no':'ok'}">${esc(l.choice)}</span></div>
-    <div style="font-size:13px;color:var(--muted);margin-top:3px">结果：${esc(l.result)}</div>
-    ${l.bad ? `<div style="margin-top:4px">当时正确的做法：<span class="ok">${esc(l.correct)}</span></div>` : ''}
-    <span class="gd">📌 ${esc(l.guard||'')}</span>
-    ${l.news?`<a href="${esc(l.news.u)}" target="_blank" rel="noopener">📎 同类真实案例：${esc(l.news.t)}</a>`:''}
-  </div>`).join('');
-
-  el(`<h1 style="text-align:center;margin:20px 0 4px">复盘</h1>
-  <p style="text-align:center;color:var(--muted);font-size:13px;margin:0 0 12px">
-    ${S.money<=0?`钱包在第 ${S.round} 个局输光`:`${S.round} 个局全部走完`} · 中招 ${bad.length} 次 · 顶住 ${ok.length} 次
-  </p>
-  <div class="card">${summary}</div>
-  ${rows}
-  <div style="display:flex;gap:10px;margin-top:14px">
-    <button class="btn primary" onclick="window.__G.newGame()">🎲 再来一局</button>
-    <button class="btn" onclick="window.__G.start()">回到首页</button>
-  </div>
-  <div style="text-align:center;margin-top:12px"><a class="back-link" href="${BACK_URL}" target="_top">📖 回到《人间防骗指南》</a></div>
-  <footer>取材自《人间防骗指南》· github.com/QERSSD/HowToAvoidScams</footer>`);
+  if (action === "start") return begin(a);
+  if (action === "scene") return begin("scene", Number(a));
+  if (action === "confirm") {
+    $("#game-dialog").close();
+    return startRun(a, Number(b), c);
+  }
+  if (action === "resume") {
+    proposed = null;
+    extras = [];
+    previousScene = run.round;
+    return run.ended ? renderReview() : renderChat(run.messages.length);
+  }
+  if (action === "choice") return choose(a);
+  if (action === "options") {
+    showOptions = !showOptions;
+    renderBar();
+    return;
+  }
+  if (action === "cancel-ai") {
+    cancelAI();
+    renderBar();
+    toast("已取消等待");
+    return;
+  }
+  if (action === "theme") {
+    const theme = document.documentElement.classList.contains("dark")
+      ? "light"
+      : "dark";
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    pref("theme", theme);
+    return;
+  }
+  if (action === "font") {
+    const large = !document.documentElement.classList.contains("large");
+    document.documentElement.classList.toggle("large", large);
+    pref("large", large);
+    return;
+  }
+  if (action === "answer" && run.ended && run.answers[a] === undefined) {
+    run.answers[a] = Number(b);
+    save();
+    const top = scrollY;
+    renderReview();
+    window.scrollTo(0, top);
+    document.querySelectorAll(".transfer-question")[Number(a)].open = true;
+  }
+});
+document.addEventListener("change", (e) => {
+  if (e.target.id === "message-speed") {
+    speed = e.target.value;
+    try {
+      localStorage.setItem("unscam-message-speed", speed);
+    } catch {}
+    if (speed === "instant" && playing) skip();
+  }
+});
+window.addEventListener("message", (e) => {
+  if (
+    e.source !== parent ||
+    e.origin !== location.origin ||
+    e.data?.type !== "UNSCAM_CLASSIC_CONFIG"
+  )
+    return;
+  aiOn = e.data.enabled === true;
+  applyPrefs(e.data);
+  if (view === "chat") renderBar();
+});
+window.addEventListener("resize", () => {
+  if (view === "chat" && followLatest)
+    requestAnimationFrame(() => scrollDown(true));
+});
+window.addEventListener("pagehide", () => {
+  save();
+  abortPlayback();
+  cancelAI();
+});
+try {
+  const response = await fetch("../data/classic.json");
+  if (!response.ok) throw Error("场景未能加载");
+  data = await response.json();
+  const saved = readSaved();
+  applyPrefs(saved);
+  run = restoreRun(saved.classic?.current, data);
+  if (saved.classic?.current && !run)
+    warning = "上次存档无法还原，已保留其他学习记录，可以重新开局。";
+  try {
+    speed = localStorage.getItem("unscam-message-speed") || "natural";
+  } catch {}
+  if (!["natural", "fast", "instant"].includes(speed)) speed = "natural";
+  renderStart();
+  if (embed)
+    parent.postMessage({ type: "UNSCAM_CLASSIC_READY" }, location.origin);
+} catch (error) {
+  $("#app").innerHTML =
+    `<div class="load-error"><h1>消息暂时没有加载好</h1><p>${esc(error.message)}</p><a href="./chat.html">重新打开</a><a href="${rootLink("learn")}" target="_top">返回学习资料</a></div>`;
 }
-
-// 暴露
-window.__G = { start, begin,
-  newGame: function(){ for(const k in S) delete S[k]; return begin(pickOne(Object.keys(IDENTITIES))); },
-  nextRound, pick, onReal, onTool, onFamily, trap, borrowAndTrap, afterTurn, review, ending,
-  state: function(){ return S; }, cur: function(){ return CUR; } };
-window.toggleTheme = toggleTheme;
-start();
-})();

@@ -52,7 +52,7 @@ test("static subpath installs its own cache and completes a story without API or
   page,
   context,
 }) => {
-  await page.goto(address);
+  await page.goto(address + "#practice");
   await expect(page.locator(".case")).toHaveCount(16);
   const scope = await page.evaluate(
     async () => (await navigator.serviceWorker.ready).scope,
@@ -63,7 +63,7 @@ test("static subpath installs its own cache and completes a story without API or
   await page.reload();
   await expect(page.locator("#api-key")).toBeVisible();
   await context.setOffline(true);
-  await page.goto(address);
+  await page.goto(address + "#practice");
   await expect(page.locator(".case")).toHaveCount(16);
   await page.locator('[data-action="start:refund"]').last().click();
   await page.locator('[data-action="choose:verify"]').click();

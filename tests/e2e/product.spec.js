@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 const action = (page, name) => page.locator(`[data-action="${name}"]`);
 async function ready(page) {
-  await page.goto("/");
+  await page.goto("/#practice");
   await expect(page.locator(".case")).toHaveCount(16);
 }
 async function start(page, id = "refund") {
@@ -35,7 +35,13 @@ test("all routes render without client exceptions; desktop home", async ({
   ]) {
     await page.goto("/#" + route);
     await expect(page.locator("main")).toBeVisible();
-    await expect(page.locator("main")).not.toBeEmpty();
+    if (route === "home")
+      await expect(
+        page
+          .frameLocator("iframe[data-classic-chat]")
+          .getByRole("button", { name: "手机响了，开始 →", exact: true }),
+      ).toBeVisible();
+    else await expect(page.locator("main")).not.toBeEmpty();
   }
   expect(errors).toEqual([]);
 });
@@ -125,7 +131,7 @@ test("unfinished session replays correctly and replacing it requires confirmatio
   await action(page, "choose:ask").click();
   await page.reload();
   await expect(page.locator(".chat-log")).toContainText("理赔截图");
-  await page.goto("/#home");
+  await page.goto("/#practice");
   await action(page, "start:job").last().click();
   await expect(page.locator("dialog")).toBeVisible();
   await page.keyboard.press("Escape");
@@ -227,7 +233,7 @@ test("AI contextual reply proposes an action but never advances without confirma
   await page.locator("#api-key").fill("test-only-secret");
   await page.locator("#ai-enabled").check();
   await action(page, "save-settings").click();
-  await page.goto("/#home");
+  await page.goto("/#practice");
   await start(page);
   await page.locator("#chat-details summary").click();
   await page.getByLabel("你的回复").fill("我想核实");
@@ -258,7 +264,7 @@ test("AI failures leave authored choices usable", async ({ page }) => {
   await page.goto("/#settings");
   await page.locator("#ai-enabled").check();
   await action(page, "save-settings").click();
-  await page.goto("/#home");
+  await page.goto("/#practice");
   await start(page);
   await page.locator("#chat-details summary").click();
   await page.getByLabel("你的回复").fill("我想核实");
@@ -305,7 +311,7 @@ for (const width of [320, 390, 768, 1440])
       );
       expect(overflow, route).toBe(false);
     }
-    await page.goto("/#home");
+    await page.goto("/#practice");
     await start(page);
     expect(
       await page.evaluate(
@@ -317,7 +323,7 @@ for (const width of [320, 390, 768, 1440])
         path: "test-results/story-mobile.png",
         fullPage: true,
       });
-      await page.goto("/#home");
+      await page.goto("/#practice");
       await page.screenshot({
         path: "test-results/home-mobile.png",
         fullPage: true,
@@ -344,7 +350,7 @@ test("keyboard navigation, dialog close and visible mobile settings", async ({
     .getByRole("link", { name: "设置", exact: true })
     .click();
   await expect(page.locator("#api-key")).toBeVisible();
-  await page.goto("/#home");
+  await page.goto("/#practice");
   await start(page);
   await action(page, "clue:0").focus();
   await page.keyboard.press("Enter");

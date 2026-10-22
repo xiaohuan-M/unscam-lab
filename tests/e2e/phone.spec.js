@@ -5,7 +5,7 @@ const action = (page, name) => page.locator(`[data-action="${name}"]`);
 test("phone inbox resumes the selected conversation without replacing its history", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/#practice");
   await expect(
     page.getByRole("region", { name: "模拟手机收件箱" }),
   ).toBeVisible();
@@ -42,7 +42,7 @@ test("phone presentation stays readable in dark and large-text modes", async ({
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/");
+  await page.goto("/#practice");
   await expect(page.locator(".message-row")).toHaveCount(16);
   await page.screenshot({
     path: "test-results/phone-inbox-desktop.png",

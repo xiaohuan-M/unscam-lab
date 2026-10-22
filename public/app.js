@@ -1,3 +1,5 @@
+import { installClassicBridge } from "./lib/classic-bridge.js";
+import { sanitizeClassic, mergeClassic } from "./classic/engine.js";
 import { createLearning } from "./lib/learning.js";
 import {
   initial,
@@ -55,9 +57,51 @@ let storageAvailable = true,
   installPrompt = null,
   swRegistration = null;
 const storeKey = STORAGE_KEY;
-function persist() {
+const classicBridge = installClassicBridge({
+  getState: () => ({
+    enabled: aiEnabled && !!config.enabled,
+    theme: saved.theme,
+    large: saved.large,
+  }),
+  request: async (body, signal) => {
+    const response = await fetch("./api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-LLM-Key": apiKey,
+        "X-App-Token": appToken,
+      },
+      body: JSON.stringify(body),
+      signal,
+    });
+    const result = await response.json();
+    if (!response.ok) throw Error(result.error || "模型暂不可用");
+    return result;
+  },
+  onProgress: (value) => {
+    saved.classic = mergeClassic(saved.classic, sanitizeClassic(value));
+    persist();
+  },
+  onPreferences: (value) => {
+    saved.theme = value.theme;
+    saved.large = value.large;
+    persist();
+    document.documentElement.dataset.theme = saved.theme;
+    document.documentElement.classList.toggle("large", saved.large);
+  },
+});
+
+function persist(clearClassic = false) {
   if (!storageAvailable) return;
   try {
+    if (!clearClassic) {
+      try {
+        saved.classic = mergeClassic(
+          saved.classic,
+          JSON.parse(localStorage.getItem(storeKey) || "{}").classic,
+        );
+      } catch {}
+    }
     localStorage.setItem(storeKey, JSON.stringify(saved));
   } catch {
     storageAvailable = false;
@@ -109,10 +153,13 @@ function button(text, action, cls = "") {
 }
 const intro = (k, t, p) =>
   `<div class="page-intro"><div class="eyebrow">${k}</div><h1>${t}</h1><p>${p}</p></div>`;
+function home() {
+  return learning.route("classic:chat");
+}
 function phoneStatus() {
   return `<div class="phone-status" aria-hidden="true"><span>9:41</span><span class="phone-island"></span><span class="phone-signal">▮▮▮ <i></i></span></div>`;
 }
-function home() {
+function practice() {
   const completed = Object.keys(saved.results).length;
   const today = scenarios[dailySeed() % scenarios.length];
   const list = scenarios.filter(
@@ -176,7 +223,7 @@ function start(id, confirmed = false) {
 }
 function play() {
   if (!session)
-    return `<div class="empty"><h1>打开一条消息开始</h1><a class="button primary" href="#home">回到收件箱</a></div>`;
+    return `<div class="empty"><h1>打开一条消息开始</h1><a class="button primary" href="#practice">回到收件箱</a></div>`;
   const s = scenarios.find((s) => s.id === session.id);
   if (session.ended) return result(s);
   const node = s.nodes[session.node];
@@ -191,7 +238,7 @@ function play() {
   return `<div class="sms-stage">
     <section class="phone-device sms-phone" aria-label="模拟手机对话">
       ${phoneStatus()}
-      <div class="chat-head"><a class="phone-back" href="#home" aria-label="保存并返回收件箱">‹</a><div class="chat-contact"><span class="contact-avatar" aria-hidden="true">${esc(s.actor[0])}</span><div><strong>${esc(s.actor)}</strong><small>虚构联系人 · 模拟对话</small></div></div><button class="phone-info" data-action="conversation-tools" aria-label="查看线索与本局信息">···</button></div>
+      <div class="chat-head"><a class="phone-back" href="#practice" aria-label="保存并返回收件箱">‹</a><div class="chat-contact"><span class="contact-avatar" aria-hidden="true">${esc(s.actor[0])}</span><div><strong>${esc(s.actor)}</strong><small>虚构联系人 · 模拟对话</small></div></div><button class="phone-info" data-action="conversation-tools" aria-label="查看线索与本局信息">···</button></div>
       <div class="thread-status"><span>${session.mode === "challenge" ? "挑战模式" : "陪练模式"}</span><span>${aiEnabled && config.enabled ? "AI 已开启" : "本地模式"} · 第 ${session.history.length + 1} 幕</span></div>
       <div class="chat-log" role="log" aria-label="剧情对话" tabindex="0">${history}<div class="message-time">现在 · 第 ${session.history.length + 1} 幕</div><div class="bubble current"><small>${session.node === "verify" ? "核实结果" : "当前消息"}</small>${esc(node.text)}</div>${chatMessages
         .filter((m) => m.node === session.node)
@@ -213,7 +260,7 @@ function play() {
       <div class="phone-bottom"><span>没有真实转账 · 不会联系任何人</span><div class="home-indicator" aria-hidden="true"></div></div>
     </section>
     <aside id="conversation-tools" class="conversation-tools" tabindex="-1">
-      <div class="conversation-context"><div class="eyebrow">这一段对话</div><h1 class="game-title">${session.mode === "challenge" ? "先聊一聊，再下结论。" : esc(s.title)}</h1><p>${esc(s.desc)}</p><a class="quiet" href="#home">← 保存并回到收件箱</a></div>
+      <div class="conversation-context"><div class="eyebrow">这一段对话</div><h1 class="game-title">${session.mode === "challenge" ? "先聊一聊，再下结论。" : esc(s.title)}</h1><p>${esc(s.desc)}</p><a class="quiet" href="#practice">← 保存并回到收件箱</a></div>
       <section class="phone-wallet"><div><span>模拟余额</span><strong>${fmt(session.money)}</strong></div><div><span>账户控制</span><strong>${session.privacy}%</strong></div><p>都是模拟数字。随时可以停下，不必把这一局玩到底。</p></section>
       <section class="phone-clues"><div class="aside-title">随手记下线索 <span>${session.clues.length} / ${clues.length}</span></div>${clues.map((c) => `<button class="clue ${session.clues.includes(c.index) ? "picked" : ""}" data-action="clue:${c.index}" aria-pressed="${session.clues.includes(c.index)}">${session.clues.includes(c.index) ? "✓" : "＋"} ${esc(c.text)}</button>`).join("") || '<p class="hint">继续观察，新的线索会逐步出现。</p>'}<p class="hint">${session.mode === "challenge" ? "这里只记录观察，结束后再揭晓解析。" : "点开线索，看看它能证明什么、不能证明什么。"}</p></section>
       <div class="conversation-links"><a href="#guide">先学三个核实动作 ↗</a><a href="#settings">${aiEnabled && config.enabled ? "管理 AI 对话" : "接入 LLM，自由追问"} ↗</a></div>
@@ -228,7 +275,7 @@ function result(s) {
   const feedback = session.assessed
     ? `<div class="notice">${session.assessmentCorrect ? "回答正确。" : "已加入错题回练。"}${esc(s.transfer.explanation)}</div>`
     : "";
-  return `${intro("THE DEBRIEF", esc(ending.title), esc(ending.explanation))}<div class="result-grid"><section><div class="panel"><span class="badge">${s.kind === "normal" ? "正常业务对照" : "风险情境"} · ${session.mode === "challenge" ? "挑战" : "陪练"}</span><div class="stats"><div class="stat"><b>${fmt(session.money)}</b><span>剩余模拟资金</span></div><div class="stat"><b>${session.privacy}%</b><span>账户控制</span></div><div class="stat"><b>${score(session)}</b><span>练习分 · 非能力评级</span></div></div><h2>带走一个动作</h2><p>${esc(s.lesson)}</p><div class="row">${button("试试另一条路", "start:" + s.id, "primary")}<a class="button" href="#home">下一段故事</a>${button("导出本局复盘", "export-session")}${button("打印复盘", "print")}</div></div>
+  return `${intro("THE DEBRIEF", esc(ending.title), esc(ending.explanation))}<div class="result-grid"><section><div class="panel"><span class="badge">${s.kind === "normal" ? "正常业务对照" : "风险情境"} · ${session.mode === "challenge" ? "挑战" : "陪练"}</span><div class="stats"><div class="stat"><b>${fmt(session.money)}</b><span>剩余模拟资金</span></div><div class="stat"><b>${session.privacy}%</b><span>账户控制</span></div><div class="stat"><b>${score(session)}</b><span>练习分 · 非能力评级</span></div></div><h2>带走一个动作</h2><p>${esc(s.lesson)}</p><div class="row">${button("试试另一条路", "start:" + s.id, "primary")}<a class="button" href="#practice">下一段故事</a>${button("导出本局复盘", "export-session")}${button("打印复盘", "print")}</div></div>
  <div class="panel"><h2>换个情境，你怎么判断？</h2><p>${esc(s.transfer.question)}</p><div class="choices">${shuffled(
    s.transfer.options.map((text, index) => ({ text, index })),
    session.seed + 9,
@@ -268,8 +315,8 @@ function review() {
     cards = Object.entries(saved.reviews),
     due = cards.filter(([, v]) => v.due <= Date.now()),
     mistakes = Object.entries(saved.mistakes);
-  return `${intro("SMALL STEPS COUNT", "把一次练习，变成下次的习惯。", "记录保存在当前浏览器。先复习还没掌握的判断，再探索其他故事。")}<div class="stats"><div class="stat"><b>${entries.length}/${scenarios.length}</b><span>完成场景</span></div><div class="stat"><b>${mistakes.filter(([, r]) => r.due <= Date.now()).length}</b><span>到期错题</span></div><div class="stat"><b>${due.length}</b><span>到期知识卡</span></div></div>
- <section class="panel"><h2>阅读与行动</h2><p>已读 ${Object.keys(saved.read || {}).length} / 373 篇 · 自查 ${Object.keys(saved.selfcheck || {}).length} / 45 项</p><div class="row"><a class="button" href="#learn">继续学习</a><a class="button" href="#selfcheck-plan">查看行动清单</a></div></section>
+  return `${intro("SMALL STEPS COUNT", "把一次练习，变成下次的习惯。", "记录保存在当前浏览器。先复习还没掌握的判断，再探索其他故事。")}<div class="stats"><div class="stat"><b>${entries.length}/${scenarios.length}</b><span>完成扩展场景</span></div><div class="stat"><b>${mistakes.filter(([, r]) => r.due <= Date.now()).length}</b><span>到期错题</span></div><div class="stat"><b>${due.length}</b><span>到期知识卡</span></div></div>
+ <section class="panel"><h2>微信聊天闯关</h2><p>${saved.classic.current ? "已保存本次聊天进度，可返回继续或查看复盘。" : "从原作的十二局挑战开始。"} 最近保存 ${saved.classic.recent.length} 次结束记录。</p><p class="quiet">在游戏右上角“···”打开过往复盘。聊天进度与记录包含在下方的学习备份中。</p><a class="button primary" href="#home">回到微信聊天</a></section><section class="panel"><h2>阅读与行动</h2><p>已读 ${Object.keys(saved.read || {}).length} / 373 篇 · 自查 ${Object.keys(saved.selfcheck || {}).length} / 45 项</p><div class="row"><a class="button" href="#learn">继续学习</a><a class="button" href="#selfcheck-plan">查看行动清单</a></div></section>
  <h2>错题与风险回练</h2>${
    mistakes.length
      ? mistakes
@@ -304,27 +351,30 @@ function review() {
 }
 function settings() {
   return `${intro("MAKE IT YOURS", "按你的方式练习。", "基础玩法无需模型，也无需账号。AI 对话按需开启。")}<div class="result-grid"><section class="panel form-grid"><h2>AI 对话设置</h2><div class="notice">${config.enabled ? `可用模型：${esc(config.model)}<br>服务商：${esc(config.provider)}` : "本地剧情可用。服务器尚未开启 AI，或当前使用静态站点。"}</div><p class="hint">开启后，当前场景、最近 6 条对话和本次输入将发送到配置的服务商。对话不会写入本地学习备份。不要输入真实个人信息。</p><label>临时 API Key<input id="api-key" type="password" autocomplete="off" placeholder="服务端已配置时可留空" value="${esc(apiKey)}"></label><label>访问口令<input id="app-token" type="password" autocomplete="off" placeholder="公开 AI 服务由管理员提供" value="${esc(appToken)}"></label><label class="inline-check"><input id="ai-enabled" type="checkbox" ${aiEnabled ? "checked" : ""} ${!config.enabled ? "disabled" : ""}> 我理解数据发送范围，启用本次会话 AI</label><div class="row">${button("保存本次设置", "save-settings", "primary")}${button("测试连接", "test-ai")}${button("清除临时凭据", "clear-keys")}</div><div id="connection-result" role="status"></div><p class="quiet">测试连接会发起一次简短模型请求，可能产生费用。刷新后密钥、口令和 AI 开关清空。</p><details><summary>部署者配置说明</summary><p class="hint">复制 .env.example 为 .env，填写 LLM_BASE_URL、LLM_MODEL、LLM_API_KEY 后重启。只支持 OpenAI 兼容 chat/completions 协议；服务地址由服务器配置。公开服务需 APP_MODE=public 和至少 16 字符 APP_TOKEN。详见仓库 README。</p></details></section>
- <section class="panel form-grid"><h2>阅读与数据</h2>${button(saved.theme === "dark" ? "切换浅色模式" : "切换深色模式", "theme")}${button(saved.large ? "关闭大字模式" : "开启大字模式", "font")}<div class="notice">${storageAvailable ? "学习记录保存在这个浏览器。建议定期导出备份。" : "浏览器存储不可用，当前仅保留临时进度。请导出后再离开。"}</div><div class="row">${button("导出备份", "export")}${button("导入备份", "import-file")}<input id="import" type="file" accept="application/json" hidden>${button("清空本地记录", "reset", "danger")}</div><p class="hint">支持导入 v1 / v2 / v3 备份；包含全文已读、自查、推理存档与主题设置，合并时保留较高成绩和已探索结局。不会导入密钥或聊天内容。</p><h3>安装与离线</h3><p class="hint" id="offline-state">${navigator.onLine ? "当前在线" : "当前离线"} · 基础资源完整缓存后可离线练习。AI 仍需要联网。</p>${button("查看离线状态", "offline-status")}${installPrompt ? button("安装到设备", "install") : ""}<p class="quiet">iPhone 可通过 Safari 分享菜单“添加到主屏幕”。安装能力因浏览器而异。</p></section></div>`;
+ <section class="panel form-grid"><h2>阅读与数据</h2>${button(saved.theme === "dark" ? "切换浅色模式" : "切换深色模式", "theme")}${button(saved.large ? "关闭大字模式" : "开启大字模式", "font")}<div class="notice">${storageAvailable ? "学习记录保存在这个浏览器。建议定期导出备份。" : "浏览器存储不可用，当前仅保留临时进度。请导出后再离开。"}</div><div class="row">${button("导出备份", "export")}${button("导入备份", "import-file")}<input id="import" type="file" accept="application/json" hidden>${button("清空本地记录", "reset", "danger")}</div><p class="hint">支持导入 v1 / v2 / v3 备份；包含微信闯关存档、最近八次复盘、全文已读、自查、推理存档与主题设置，合并时保留较高成绩和已探索结局。不会导入密钥或聊天内容。</p><h3>安装与离线</h3><p class="hint" id="offline-state">${navigator.onLine ? "当前在线" : "当前离线"} · 基础资源完整缓存后可离线练习。AI 仍需要联网。</p>${button("查看离线状态", "offline-status")}${installPrompt ? button("安装到设备", "install") : ""}<p class="quiet">iPhone 可通过 Safari 分享菜单“添加到主屏幕”。安装能力因浏览器而异。</p></section></div>`;
 }
 function help() {
   return `${intro("PAUSE FIRST", "如果这件事正在现实中发生。", "先退出模拟练习。不要再为“解冻”“认证”“追回”支付任何费用。")}<div class="result-grid"><section class="panel"><h2>现在可以做的四件事</h2><ol><li><strong>停止转账和屏幕共享。</strong>不再按对方指示操作，不继续提供密码或验证码。</li><li><strong>通过独立官方渠道求助。</strong>中国大陆发生诈骗损失或紧急危险时，拨打 110；其他地区联系当地警方。及时联系银行或支付平台官方客服反映风险。</li><li><strong>保存现有证据。</strong>保留聊天、转账凭证、对方账号、时间与金额，不为取证继续与对方纠缠。</li><li><strong>找一个可信的人陪你处理。</strong>不要独自承受，也不要相信陌生人“付费追款”的保证。</li></ol><a class="button primary" href="tel:110">中国大陆：拨打 110</a><p class="hint">电话入口会唤起设备拨号功能；本应用不会自动报警。资金追回无法保证。</p></section><section class="panel checklist"><h3>准备材料（不上传）</h3>${["发生时间与经过", "转账时间、金额及凭证", "对方账号与联系方式", "聊天与页面截图", "已经采取的停止或保护措施"].map((t) => `<label><input type="checkbox">${t}</label>`).join("")}<p class="hint">这些勾选仅用于当前页面提醒。不要在 AI 对话中输入真实账号、身份证或验证码。</p><a class="quiet" href="https://www.gov.cn/xinwen/2016-04/08/content_5062481.htm" target="_blank" rel="noopener noreferrer">公安部接警止付公开说明 ↗</a></section></div>`;
 }
 function about() {
-  return `${intro("ABOUT THE PROJECT", "识局 · Unscam Lab", "一个允许犯错，也鼓励中途停下的防骗练习场。")}<section class="panel"><h3>站在参考项目的基础上，重新设计学习体验</h3><p>参考 <a href="https://github.com/QERSSD/HowToAvoidScams" target="_blank" rel="noopener noreferrer">QERSSD / HowToAvoidScams</a>。完整保留原项目 65 个文件：373 篇全文及所有字段、45 道自查原题、16 个聊天事件、12 个逻辑谜题、42 个术语、120 条报道、3 篇长文、16 个分卷、问答技能与全部下载资料。全文阅读与生活自查进行了交互重构；原版游戏保留规则并适配导航。新增 16 个分支故事和 AI 陪练由本项目实现。<a href="#resources">查看完整内容与校验清单 →</a></p><p>上游快照：43c261f40c2e699f18bbcf3057645c0d8551ec23。参考内容不是本项目逐条独立核验的事实库；尤其是法律门槛、医疗效果、绝对化表述，不应直接用于现实判断。训练内容不复用上游的具体法律定罪断言。</p><p>本项目不收集分析埋点、不展示广告。基础模式不发送学习输入；使用 AI 时会把当前场景、最近六条对话与本次输入发送到配置的模型服务商。</p><h3>许可</h3><p>程序代码：MIT。原作文字与本项目教育文本：CC BY-NC-SA 4.0。含这些内容的版本不能直接用于商业用途；商业化需获得对应授权或独立替换受限内容。</p></section>`;
+  return `${intro("ABOUT THE PROJECT", "识局 · Unscam Lab", "一个允许犯错，也鼓励中途停下的防骗练习场。")}<section class="panel"><h3>沿着原作的微信式对话，改进游玩与学习体验</h3><p>参考 <a href="https://github.com/QERSSD/HowToAvoidScams" target="_blank" rel="noopener noreferrer">QERSSD / HowToAvoidScams</a>。完整保留原项目 65 个文件：373 篇全文及所有字段、45 道自查原题、16 个聊天事件、12 个逻辑谜题、42 个术语、120 条报道、3 篇长文、16 个分卷、问答技能与全部下载资料。全文阅读与生活自查进行了交互重构；微信式聊天是默认入口：保留 16 场景与十二局挑战，改进逐条消息、止损分支、存档和复盘。新增 16 个分支故事和 AI 陪练由本项目实现。<a href="#resources">查看完整内容与校验清单 →</a></p><p>上游快照：43c261f40c2e699f18bbcf3057645c0d8551ec23。参考内容不是本项目逐条独立核验的事实库；尤其是法律门槛、医疗效果、绝对化表述，不应直接用于现实判断。训练内容不复用上游的具体法律定罪断言。</p><p>本项目不收集分析埋点、不展示广告。基础模式不发送学习输入；使用 AI 时会把当前场景、最近六条对话与本次输入发送到配置的模型服务商。</p><h3>许可</h3><p>程序代码：MIT。原作文字与本项目教育文本：CC BY-NC-SA 4.0。含这些内容的版本不能直接用于商业用途；商业化需获得对应授权或独立替换受限内容。</p></section>`;
 }
 function render() {
   const route = (location.hash || "#home").slice(1);
   document.body.dataset.view =
-    route === "play" && session && !session.ended
-      ? "phone-play"
-      : route === "home"
-        ? "phone-home"
-        : route;
+    route === "home" || route === "classic:chat"
+      ? "original-game"
+      : route === "play" && session && !session.ended
+        ? "phone-play"
+        : route === "practice"
+          ? "phone-home"
+          : route;
   $("#main").innerHTML =
     learning?.route(route) ??
     (
-      { home, play, library, review, settings, help, about, guide }[route] ||
-      home
+      { home, practice, play, library, review, settings, help, about, guide }[
+        route
+      ] || home
     )();
   document.documentElement.classList.toggle("large", !!saved.large);
   document.documentElement.dataset.theme = saved.theme || "light";
@@ -334,7 +384,7 @@ function render() {
       a.setAttribute(
         "aria-current",
         a.hash === "#" + route ||
-          (a.hash === "#home" && route === "play") ||
+          (a.hash === "#home" && route === "classic:chat") ||
           (a.hash === "#learn" &&
             /^(article:|document:|selfcheck|games|classic:|glossary|sources|resources)/.test(
               route,
@@ -636,12 +686,20 @@ document.addEventListener("click", async (e) => {
     case "theme":
       saved.theme = saved.theme === "dark" ? "light" : "dark";
       persist();
-      render();
+      if (document.querySelector("iframe[data-classic-chat]")) {
+        document.documentElement.dataset.theme = saved.theme;
+        document.documentElement.classList.toggle("large", saved.large);
+        classicBridge.refresh();
+      } else render();
       break;
     case "font":
       saved.large = !saved.large;
       persist();
-      render();
+      if (document.querySelector("iframe[data-classic-chat]")) {
+        document.documentElement.dataset.theme = saved.theme;
+        document.documentElement.classList.toggle("large", saved.large);
+        classicBridge.refresh();
+      } else render();
       break;
     case "save-settings":
       apiKey = $("#api-key").value.trim();
@@ -708,7 +766,7 @@ document.addEventListener("click", async (e) => {
         localStorage.removeItem("shimian.save.v1");
         localStorage.removeItem(STORAGE_KEY);
       } catch {}
-      persist();
+      persist(true);
       $("#modal").close();
       render();
       toast("本地学习记录已清空");
@@ -802,8 +860,14 @@ window.addEventListener("beforeinstallprompt", (e) => {
 window.addEventListener("offline", () => toast("已离线，基础训练仍可继续。"));
 window.addEventListener("online", () => toast("网络已恢复。"));
 window.addEventListener("storage", (e) => {
-  if (e.key === STORAGE_KEY)
-    toast("另一个页面更新了学习记录，建议刷新后继续。");
+  if (e.key !== STORAGE_KEY) return;
+  // The embedded game shares storage with its host; its own saves need no cross-tab warning.
+  if (
+    document.querySelector("iframe[data-classic-chat]") &&
+    e.url.includes("/classic/chat.html")
+  )
+    return;
+  toast("另一个页面更新了学习记录，建议刷新后继续。");
 });
 async function setupOffline() {
   if (!("serviceWorker" in navigator)) return;
@@ -871,6 +935,7 @@ try {
     .then((r) => (r.ok ? r.json() : {}))
     .then((data) => {
       config = data;
+      classicBridge.refresh();
       if (location.hash === "#settings") {
         const draftKey = $("#api-key").value,
           draftToken = $("#app-token").value,

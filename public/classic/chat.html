@@ -1,16 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>别被骗了啊 · 12 个局，看你能顶住几局</title>
-<meta name="description" content="12 个真实骗局改编的聊天式防骗模拟：你只有 1 万块，选错就亏钱，局中不给答案，走完一次性复盘你踩了哪些坑。">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="theme-color" content="#ededed">
+<title>别被骗了啊 · 微信式防骗模拟</title>
 <link rel="stylesheet" href="../reference/game/css/style.css">
+<link rel="stylesheet" href="./chat.css">
 </head>
 <body>
-<div id="app"></div>
-<script src="../reference/game/js/data.js"></script>
-<script src="../reference/game/js/replies.js"></script>
-<script src="chat.js"></script>
+<a class="skip-game" href="#app">跳到游戏</a>
+<main id="app" tabindex="-1"><p class="loading">正在准备消息…</p></main>
+<dialog id="game-dialog" aria-label="游戏菜单"><div id="dialog-content"></div><form method="dialog"><button class="btn close-dialog">关闭</button></form></dialog>
+<div id="game-toast" role="status" aria-live="polite"></div>
+<script type="module" src="./chat.js"></script>
 </body>
 </html>
