@@ -55,7 +55,7 @@ test("legacy backup migrates without importing credentials", () => {
     scenarios,
     knowledge,
   );
-  assert.equal(p.version, 2);
+  assert.equal(p.version, 3);
   assert.deepEqual(p.results.refund.endings, ["loss"]);
   assert.equal(p.apiKey, undefined);
 });

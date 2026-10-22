@@ -71,8 +71,13 @@ export function createApp({
     );
     try {
       const url = new URL(req.url, "http://localhost");
+      if (/^\/(classic|reference)\//.test(url.pathname))
+        res.setHeader(
+          "Content-Security-Policy",
+          "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'",
+        );
       if (url.pathname === "/api/health" && req.method === "GET")
-        return send(200, { status: "ok", version: "2.0.0" });
+        return send(200, { status: "ok", version: "3.0.0" });
       if (url.pathname === "/api/config" && req.method === "GET")
         return send(200, {
           enabled,
@@ -260,6 +265,10 @@ export function createApp({
           ".svg": "image/svg+xml",
           ".png": "image/png",
           ".txt": "text/plain; charset=utf-8",
+          ".md": "text/plain; charset=utf-8",
+          ".pdf": "application/pdf",
+          ".epub": "application/epub+zip",
+          ".zip": "application/zip",
         }[path.extname(file)] || "application/octet-stream";
       res.writeHead(200, { "Content-Type": mime, "Cache-Control": "no-cache" });
       res.end(req.method === "HEAD" ? undefined : bytes);
@@ -277,7 +286,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     host = process.env.HOST || "127.0.0.1";
   const app = createApp();
   app.listen(port, host, () =>
-    console.log(`识局 v2.0.0 · http://${host}:${port}`),
+    console.log(`识局 v3.0.0 · http://${host}:${port}`),
   );
   const shutdown = () => {
     app.close(() => process.exit(0));

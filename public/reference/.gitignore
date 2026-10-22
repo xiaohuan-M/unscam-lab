@@ -1,0 +1,33 @@
+# 原始素材：不公开，本地维护，只改这一个文件
+人间防骗指南.md
+
+# 给 AI 看的上下文文件：本地使用，不入库
+AI-CONTEXT.md
+AI-README.md
+
+# 参考用的他人仓库快照
+HowToLiveBetter.html
+HowToMakeWorkPay.html
+
+# 构建中间产物与缓存
+__pycache__/
+*.pyc
+tools/_*.js
+tools/_*.json
+
+# 本地工作区数据
+.workbuddy/
+.DS_Store
+Thumbs.db
+
+# 游戏设计与构建工作区（本地保留，正式产物在 game/）
+game-adaptations/
+
+# 本地评审用的思维导图
+mindmap.html
+
+marketing/
+mindmaps/
+
+# Python 虚拟环境（构建 PDF/EPUB/Anki/压图用）
+env/

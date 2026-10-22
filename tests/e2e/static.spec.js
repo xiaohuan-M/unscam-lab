@@ -23,7 +23,7 @@ test.beforeAll(async () => {
     }
     const file = path.resolve(
       root,
-      pathname.slice("/unscam-lab/".length) || "index.html",
+      decodeURIComponent(pathname.slice("/unscam-lab/".length)) || "index.html",
     );
     if (!file.startsWith(root + path.sep)) {
       res.writeHead(404).end();

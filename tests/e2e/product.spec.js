@@ -107,7 +107,7 @@ test("library search, empty state, pagination and review", async ({ page }) => {
   await page.goto("/#library");
   await page.getByLabel("搜索知识").fill("验证码");
   await expect(page.locator(".knowledge article").first()).toBeVisible();
-  await page.locator('[data-action^="bookmark:"]').first().click();
+  await page.locator('[data-learn^="bookmark:"]').first().click();
   await page.goto("/#review");
   await expect(page.locator("main")).toContainText("知识卡复习");
   await page.locator("summary").first().click();
@@ -115,7 +115,7 @@ test("library search, empty state, pagination and review", async ({ page }) => {
   await page.goto("/#library");
   await page.getByLabel("搜索知识").fill("不存在的关键词xyz");
   await expect(page.locator("#knowledge-results")).toContainText("没有找到");
-  await expect(action(page, "next")).toBeDisabled();
+  await expect(page.locator('[data-learn="next"]')).toBeDisabled();
 });
 test("unfinished session replays correctly and replacing it requires confirmation", async ({
   page,
@@ -368,7 +368,7 @@ test("learning backup export has no dialogue or credentials", async ({
   let text = "";
   for await (const chunk of stream) text += chunk;
   expect(text).not.toContain("secret-not-exported");
-  expect(JSON.parse(text).version).toBe(2);
+  expect(JSON.parse(text).version).toBe(3);
   expect(JSON.parse(text).results.refund).toBeTruthy();
 });
 

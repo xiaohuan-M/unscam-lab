@@ -1,3 +1,4 @@
+import { createLearning } from "./lib/learning.js";
 import {
   initial,
   act,
@@ -13,6 +14,7 @@ import {
   validateProgress,
   mergeProgress,
   backup,
+  validatePuzzles,
 } from "./lib/storage.js";
 const $ = (s) => document.querySelector(s),
   esc = (s) =>
@@ -27,6 +29,7 @@ const $ = (s) => document.querySelector(s),
           "'": "&#39;",
         })[c],
     );
+let collection, learning;
 let scenarios = [],
   knowledge = [],
   lessons = { cards: [], sources: [] },
@@ -116,7 +119,8 @@ function home() {
       (filter === "未完成" && !saved.results[s.id]),
   );
   const cards = saved.mode === "challenge" ? shuffled(list, dailySeed()) : list;
-  return `<section class="hero"><div><div class="eyebrow">UNSCAM LAB / 2.0</div><h1>骗局可以重来，<br><em>生活不必交学费。</em></h1><p>一条消息，一个选择。<br>在可以犯错的故事里，练习核实、判断和及时停下。</p><div class="row hero-actions">${button("开始今日一局 ↗", "start:" + today.id, "primary")}${saved.session && !saved.session.ended ? button("继续上次练习 →", "resume") : ""}<a class="button" href="#guide">先学三个动作</a></div><span class="quiet">16 个虚构情境 · 无需登录 · 本地模式不上传输入</span></div><div class="scene-art" aria-label="模拟消息与独立核实的选择"><div class="floating-card"><div class="card-cap"><span>一条新消息</span><span>刚刚</span></div><p>“这笔退款已经准备好了，<br>我们先核对一下账户……”</p></div><div class="floating-card"><div class="card-cap"><span>你的选择</span><span>↗</span></div><p>先停一下。<br>我从自己找到的入口查一查。</p></div><div class="stamp">保持清醒<br>慢一点也好</div></div></section>
+  return `<section class="hero"><div><div class="eyebrow">UNSCAM LAB / 3.0</div><h1>骗局可以重来，<br><em>生活不必交学费。</em></h1><p>一条消息，一个选择。<br>在可以犯错的故事里，练习核实、判断和及时停下。</p><div class="row hero-actions">${button("开始今日一局 ↗", "start:" + today.id, "primary")}${saved.session && !saved.session.ended ? button("继续上次练习 →", "resume") : ""}<a class="button" href="#guide">先学三个动作</a></div><span class="quiet">16 个新版情境 · 373 篇全文 · 本地模式不上传输入</span></div><div class="scene-art" aria-label="模拟消息与独立核实的选择"><div class="floating-card"><div class="card-cap"><span>一条新消息</span><span>刚刚</span></div><p>“这笔退款已经准备好了，<br>我们先核对一下账户……”</p></div><div class="floating-card"><div class="card-cap"><span>你的选择</span><span>↗</span></div><p>先停一下。<br>我从自己找到的入口查一查。</p></div><div class="stamp">保持清醒<br>慢一点也好</div></div></section>
+ <section class="learning-shortcut"><div><span class="eyebrow">THE COMPLETE COLLECTION</span><h2>原作内容，完整收录。</h2><p>全文知识库 · 45 项自查 · 经典闯关 · 12 个推理谜题 · 离线资料</p></div><a class="button primary" href="#learn">打开学习地图 ↗</a></section>
  <section class="stats" aria-label="训练概况"><div class="stat"><b>${scenarios.length}</b><span>个生活情境</span></div><div class="stat"><b>${Object.keys(saved.mistakes).length}</b><span>个待巩固场景</span></div><div class="stat"><b>${String(completed).padStart(2, "0")}</b><span>个已完成故事</span></div></section>
  <div class="section-head"><div><div class="eyebrow">THE PRACTICE ROOM</div><h2>不是每条消息，都是骗局。</h2></div><a class="quiet" href="#review">查看我的成长 ↗</a></div><p class="hint">16 个故事混合风险情境与正常业务。目标是找出可靠依据，而不是一律拒绝。</p>
  <div class="mode-switch" role="group" aria-label="练习模式">${button("陪练模式 · 可查看提示", "mode:learn", saved.mode === "learn" ? "primary" : "")}${button("挑战模式 · 结束后看解析", "mode:challenge", saved.mode === "challenge" ? "primary" : "")}</div>
@@ -217,29 +221,17 @@ function result(s) {
  <section class="panel"><h2>你的决定，逐步拆开看</h2><div class="timeline">${session.history.map((h) => `<div><strong>${esc(h.label)}</strong><p>${esc(h.lesson)}</p><span class="quiet ${h.loss || h.privacy ? "danger" : ""}">${h.loss ? "模拟资金 −" + fmt(h.loss) : h.privacy ? "账户控制 −" + h.privacy + "%" : "没有新增损失"}</span></div>`).join("")}</div><h3>回看线索</h3>${s.clues.map((c, i) => `<details><summary>${session.clues.includes(i) ? "✓ 你标记了" : "○ 未标记"} · ${esc(c.text)}</summary><p>${esc(c.why)}</p></details>`).join("")}${sourceNote(s)}<div class="notice">发现风险后停下，是值得练习的能力。受骗不意味着你不够聪明。</div><a class="button" href="#help">现实中遇到问题怎么办 ↗</a></section></div>`;
 }
 function library() {
-  return `${intro("THE FIELD GUIDE", "先学会核实，再认识更多套路。", "六张行动卡结合公开来源整理；扩展资料保留原项目出处，作为参考阅读。")}<div class="lesson-grid">${lessons.cards.map((c) => `<article class="panel"><span class="tag">行动卡</span><h2>${esc(c.title)}</h2><p>${esc(c.why)}</p><strong>${esc(c.action)}</strong><details><summary>查看依据</summary>${sources([c.sourceId])}</details>${button("进入对应练习 →", "start:" + c.scenario, "text")}</article>`).join("")}</div><div class="section-head"><h2>扩展参考 · ${knowledge.length} 篇</h2><span class="quiet">QERSSD / 人间防骗指南</span></div><p class="notice">以下是保留出处的上游摘录，不是逐条核验的教材。法律门槛、医疗效果与绝对化表述请独立核实。练习评分不依赖这些摘录中的法律断言。</p><div class="searchbar"><input id="search" type="search" placeholder="搜索：兼职、退费、验证码…" aria-label="搜索知识" value="${esc(query)}"><select id="category" aria-label="按类别筛选"><option>全部</option>${[...new Set(knowledge.map((k) => k.cat))].map((c) => `<option ${category === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></div><div id="knowledge-results"></div>`;
+  return learning.library(
+    lessons.cards
+      .map(
+        (c) =>
+          `<article class="panel"><span class="tag">行动卡</span><h2>${esc(c.title)}</h2><p>${esc(c.why)}</p><strong>${esc(c.action)}</strong><details><summary>查看依据</summary>${sources([c.sourceId])}</details>${button("进入对应练习 →", "start:" + c.scenario, "text")}</article>`,
+      )
+      .join(""),
+  );
 }
 function renderKnowledge() {
-  const rows = knowledge.filter(
-    (k) =>
-      (category === "全部" || k.cat === category) &&
-      `${k.title} ${k.lead} ${k.points.join(" ")} ${k.guards.join(" ")}`
-        .toLowerCase()
-        .includes(query.toLowerCase()),
-  );
-  const pages = Math.max(1, Math.ceil(rows.length / 12));
-  page = Math.min(page, pages - 1);
-  $("#knowledge-results").innerHTML =
-    `<div class="section-head"><span class="quiet">找到 ${rows.length} 篇 · ${page + 1}/${pages} 页</span><div class="row"><button data-action="prev" ${page === 0 ? "disabled" : ""}>上一页</button><button data-action="next" ${page >= pages - 1 ? "disabled" : ""}>下一页</button></div></div><div class="knowledge">${
-      rows
-        .slice(page * 12, page * 12 + 12)
-        .map(
-          (k) =>
-            `<article><span class="tag">${esc(k.cat)}</span><h3>${esc(k.title)}</h3><p>${esc(k.lead)}</p><details><summary>展开拆解与防护</summary><h4>常见套路</h4><ul>${k.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul><h4>参考防护建议（上游原文）</h4><ul>${k.guards.map((p) => `<li>${esc(p)}</li>`).join("")}</ul><a class="quiet" href="https://github.com/QERSSD/HowToAvoidScams" target="_blank" rel="noopener noreferrer">查看原项目与完整案例来源 ↗</a></details>${button(saved.reviews[k.id] ? "已加入复习 ✓" : "加入复习", "bookmark:" + k.id, "text")}</article>`,
-        )
-        .join("") ||
-      '<div class="empty">没有找到。试试更短的关键词，或选择“全部”类别。</div>'
-    }</div>`;
+  learning.results();
 }
 function review() {
   const entries = Object.entries(saved.results),
@@ -247,6 +239,7 @@ function review() {
     due = cards.filter(([, v]) => v.due <= Date.now()),
     mistakes = Object.entries(saved.mistakes);
   return `${intro("SMALL STEPS COUNT", "把一次练习，变成下次的习惯。", "记录保存在当前浏览器。先复习还没掌握的判断，再探索其他故事。")}<div class="stats"><div class="stat"><b>${entries.length}/${scenarios.length}</b><span>完成场景</span></div><div class="stat"><b>${mistakes.filter(([, r]) => r.due <= Date.now()).length}</b><span>到期错题</span></div><div class="stat"><b>${due.length}</b><span>到期知识卡</span></div></div>
+ <section class="panel"><h2>阅读与行动</h2><p>已读 ${Object.keys(saved.read || {}).length} / 373 篇 · 自查 ${Object.keys(saved.selfcheck || {}).length} / 45 项</p><div class="row"><a class="button" href="#learn">继续学习</a><a class="button" href="#selfcheck-plan">查看行动清单</a></div></section>
  <h2>错题与风险回练</h2>${
    mistakes.length
      ? mistakes
@@ -281,24 +274,37 @@ function review() {
 }
 function settings() {
   return `${intro("MAKE IT YOURS", "按你的方式练习。", "基础玩法无需模型，也无需账号。AI 对话按需开启。")}<div class="result-grid"><section class="panel form-grid"><h2>AI 对话设置</h2><div class="notice">${config.enabled ? `可用模型：${esc(config.model)}<br>服务商：${esc(config.provider)}` : "本地剧情可用。服务器尚未开启 AI，或当前使用静态站点。"}</div><p class="hint">开启后，当前场景、最近 6 条对话和本次输入将发送到配置的服务商。对话不会写入本地学习备份。不要输入真实个人信息。</p><label>临时 API Key<input id="api-key" type="password" autocomplete="off" placeholder="服务端已配置时可留空" value="${esc(apiKey)}"></label><label>访问口令<input id="app-token" type="password" autocomplete="off" placeholder="公开 AI 服务由管理员提供" value="${esc(appToken)}"></label><label class="inline-check"><input id="ai-enabled" type="checkbox" ${aiEnabled ? "checked" : ""} ${!config.enabled ? "disabled" : ""}> 我理解数据发送范围，启用本次会话 AI</label><div class="row">${button("保存本次设置", "save-settings", "primary")}${button("测试连接", "test-ai")}${button("清除临时凭据", "clear-keys")}</div><div id="connection-result" role="status"></div><p class="quiet">测试连接会发起一次简短模型请求，可能产生费用。刷新后密钥、口令和 AI 开关清空。</p><details><summary>部署者配置说明</summary><p class="hint">复制 .env.example 为 .env，填写 LLM_BASE_URL、LLM_MODEL、LLM_API_KEY 后重启。只支持 OpenAI 兼容 chat/completions 协议；服务地址由服务器配置。公开服务需 APP_MODE=public 和至少 16 字符 APP_TOKEN。详见仓库 README。</p></details></section>
- <section class="panel form-grid"><h2>阅读与数据</h2>${button(saved.large ? "关闭大字模式" : "开启大字模式", "font")}<div class="notice">${storageAvailable ? "学习记录保存在这个浏览器。建议定期导出备份。" : "浏览器存储不可用，当前仅保留临时进度。请导出后再离开。"}</div><div class="row">${button("导出备份", "export")}${button("导入备份", "import-file")}<input id="import" type="file" accept="application/json" hidden>${button("清空本地记录", "reset", "danger")}</div><p class="hint">支持导入 v1 与 v2 备份，合并时保留较高成绩和已探索结局。不会导入密钥或聊天内容。</p><h3>安装与离线</h3><p class="hint" id="offline-state">${navigator.onLine ? "当前在线" : "当前离线"} · 基础资源完整缓存后可离线练习。AI 仍需要联网。</p>${button("查看离线状态", "offline-status")}${installPrompt ? button("安装到设备", "install") : ""}<p class="quiet">iPhone 可通过 Safari 分享菜单“添加到主屏幕”。安装能力因浏览器而异。</p></section></div>`;
+ <section class="panel form-grid"><h2>阅读与数据</h2>${button(saved.theme === "dark" ? "切换浅色模式" : "切换深色模式", "theme")}${button(saved.large ? "关闭大字模式" : "开启大字模式", "font")}<div class="notice">${storageAvailable ? "学习记录保存在这个浏览器。建议定期导出备份。" : "浏览器存储不可用，当前仅保留临时进度。请导出后再离开。"}</div><div class="row">${button("导出备份", "export")}${button("导入备份", "import-file")}<input id="import" type="file" accept="application/json" hidden>${button("清空本地记录", "reset", "danger")}</div><p class="hint">支持导入 v1 / v2 / v3 备份；包含全文已读、自查、推理存档与主题设置，合并时保留较高成绩和已探索结局。不会导入密钥或聊天内容。</p><h3>安装与离线</h3><p class="hint" id="offline-state">${navigator.onLine ? "当前在线" : "当前离线"} · 基础资源完整缓存后可离线练习。AI 仍需要联网。</p>${button("查看离线状态", "offline-status")}${installPrompt ? button("安装到设备", "install") : ""}<p class="quiet">iPhone 可通过 Safari 分享菜单“添加到主屏幕”。安装能力因浏览器而异。</p></section></div>`;
 }
 function help() {
   return `${intro("PAUSE FIRST", "如果这件事正在现实中发生。", "先退出模拟练习。不要再为“解冻”“认证”“追回”支付任何费用。")}<div class="result-grid"><section class="panel"><h2>现在可以做的四件事</h2><ol><li><strong>停止转账和屏幕共享。</strong>不再按对方指示操作，不继续提供密码或验证码。</li><li><strong>通过独立官方渠道求助。</strong>中国大陆发生诈骗损失或紧急危险时，拨打 110；其他地区联系当地警方。及时联系银行或支付平台官方客服反映风险。</li><li><strong>保存现有证据。</strong>保留聊天、转账凭证、对方账号、时间与金额，不为取证继续与对方纠缠。</li><li><strong>找一个可信的人陪你处理。</strong>不要独自承受，也不要相信陌生人“付费追款”的保证。</li></ol><a class="button primary" href="tel:110">中国大陆：拨打 110</a><p class="hint">电话入口会唤起设备拨号功能；本应用不会自动报警。资金追回无法保证。</p></section><section class="panel checklist"><h3>准备材料（不上传）</h3>${["发生时间与经过", "转账时间、金额及凭证", "对方账号与联系方式", "聊天与页面截图", "已经采取的停止或保护措施"].map((t) => `<label><input type="checkbox">${t}</label>`).join("")}<p class="hint">这些勾选仅用于当前页面提醒。不要在 AI 对话中输入真实账号、身份证或验证码。</p><a class="quiet" href="https://www.gov.cn/xinwen/2016-04/08/content_5062481.htm" target="_blank" rel="noopener noreferrer">公安部接警止付公开说明 ↗</a></section></div>`;
 }
 function about() {
-  return `${intro("ABOUT THE PROJECT", "识局 · Unscam Lab", "一个允许犯错，也鼓励中途停下的防骗练习场。")}<section class="panel"><h3>站在参考项目的基础上，重新设计学习体验</h3><p>参考 <a href="https://github.com/QERSSD/HowToAvoidScams" target="_blank" rel="noopener noreferrer">QERSSD / HowToAvoidScams</a>。知识库的 373 篇标题、导语、要点与防护建议摘自其 articles.json；进行了字段筛选和展示重构，保留原作者署名，按 CC BY-NC-SA 4.0 提供。剧情、交互和程序为本项目新实现。</p><p>上游快照：43c261f40c2e699f18bbcf3057645c0d8551ec23。参考内容不是本项目逐条独立核验的事实库；尤其是法律门槛、医疗效果、绝对化表述，不应直接用于现实判断。训练内容不复用上游的具体法律定罪断言。</p><p>本项目不收集分析埋点、不展示广告。基础模式不发送学习输入；使用 AI 时会把当前场景、最近六条对话与本次输入发送到配置的模型服务商。</p><h3>许可</h3><p>程序代码：MIT。知识库摘录与本项目教育文本：CC BY-NC-SA 4.0。含这些内容的版本不能直接用于商业用途；商业化需获得对应授权或独立替换受限内容。</p></section>`;
+  return `${intro("ABOUT THE PROJECT", "识局 · Unscam Lab", "一个允许犯错，也鼓励中途停下的防骗练习场。")}<section class="panel"><h3>站在参考项目的基础上，重新设计学习体验</h3><p>参考 <a href="https://github.com/QERSSD/HowToAvoidScams" target="_blank" rel="noopener noreferrer">QERSSD / HowToAvoidScams</a>。完整保留原项目 65 个文件：373 篇全文及所有字段、45 道自查原题、16 个聊天事件、12 个逻辑谜题、42 个术语、120 条报道、3 篇长文、16 个分卷、问答技能与全部下载资料。全文阅读与生活自查进行了交互重构；原版游戏保留规则并适配导航。新增 16 个分支故事和 AI 陪练由本项目实现。<a href="#resources">查看完整内容与校验清单 →</a></p><p>上游快照：43c261f40c2e699f18bbcf3057645c0d8551ec23。参考内容不是本项目逐条独立核验的事实库；尤其是法律门槛、医疗效果、绝对化表述，不应直接用于现实判断。训练内容不复用上游的具体法律定罪断言。</p><p>本项目不收集分析埋点、不展示广告。基础模式不发送学习输入；使用 AI 时会把当前场景、最近六条对话与本次输入发送到配置的模型服务商。</p><h3>许可</h3><p>程序代码：MIT。原作文字与本项目教育文本：CC BY-NC-SA 4.0。含这些内容的版本不能直接用于商业用途；商业化需获得对应授权或独立替换受限内容。</p></section>`;
 }
 function render() {
   const route = (location.hash || "#home").slice(1);
-  $("#main").innerHTML = (
-    { home, play, library, review, settings, help, about, guide }[route] || home
-  )();
+  $("#main").innerHTML =
+    learning?.route(route) ??
+    (
+      { home, play, library, review, settings, help, about, guide }[route] ||
+      home
+    )();
   document.documentElement.classList.toggle("large", !!saved.large);
+  document.documentElement.dataset.theme = saved.theme || "light";
   document
     .querySelectorAll("nav a")
     .forEach((a) =>
-      a.setAttribute("aria-current", a.hash === "#" + route ? "page" : "false"),
+      a.setAttribute(
+        "aria-current",
+        a.hash === "#" + route ||
+          (a.hash === "#learn" &&
+            /^(article:|document:|selfcheck|games|classic:|glossary|sources|resources)/.test(
+              route,
+            ))
+          ? "page"
+          : "false",
+      ),
     );
   if (route === "library") renderKnowledge();
   if (route === "play" && session && !session.ended) {
@@ -579,6 +585,11 @@ document.addEventListener("click", async (e) => {
       renderKnowledge();
       $("#knowledge-results").scrollIntoView({ block: "start" });
       break;
+    case "theme":
+      saved.theme = saved.theme === "dark" ? "light" : "dark";
+      persist();
+      render();
+      break;
     case "font":
       saved.large = !saved.large;
       persist();
@@ -616,7 +627,7 @@ document.addEventListener("click", async (e) => {
       break;
     }
     case "export":
-      download("unscam-progress-v2.json", backup(saved));
+      download("unscam-progress-v3.json", backup(saved));
       break;
     case "export-session":
       download("unscam-debrief.json", {
@@ -635,7 +646,7 @@ document.addEventListener("click", async (e) => {
       break;
     case "reset":
       $("#modal-body").innerHTML =
-        "<h2>清空本地学习记录？</h2><p>这会移除当前剧情、成绩、错题和知识卡。建议先导出备份。</p>" +
+        "<h2>清空本地学习记录？</h2><p>这会移除当前剧情、成绩、错题、知识卡、全文已读、自查答案和推理存档。建议先导出备份。</p>" +
         button("确认清空", "confirm-reset", "danger");
       $("#modal").showModal();
       break;
@@ -646,6 +657,7 @@ document.addEventListener("click", async (e) => {
       chatMessages = [];
       try {
         localStorage.removeItem("unscam-v1");
+        localStorage.removeItem("shimian.save.v1");
         localStorage.removeItem(STORAGE_KEY);
       } catch {}
       persist();
@@ -725,6 +737,16 @@ window.addEventListener("hashchange", () => {
   window.scrollTo(0, 0);
   $("#main").focus({ preventScroll: true });
 });
+window.addEventListener("message", (e) => {
+  if (
+    e.origin !== location.origin ||
+    e.source !== document.querySelector(".classic-frame")?.contentWindow ||
+    e.data?.type !== "UNSCAM_PUZZLES_UPDATED"
+  )
+    return;
+  saved.puzzles = validatePuzzles(e.data.puzzles);
+  persist();
+});
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   installPrompt = e;
@@ -765,8 +787,8 @@ async function setupOffline() {
   }
 }
 try {
-  [scenarios, knowledge, lessons] = await Promise.all(
-    ["scenarios", "knowledge", "lessons"].map((n) =>
+  [scenarios, knowledge, lessons, collection] = await Promise.all(
+    ["scenarios", "knowledge", "lessons", "collection"].map((n) =>
       fetch(`./data/${n}.json`).then((r) => {
         if (!r.ok) throw Error("资源加载失败");
         return r.json();
@@ -785,6 +807,15 @@ try {
   }
   saved = loaded.data;
   session = saved.session;
+  learning = createLearning({
+    knowledge,
+    collection,
+    getSaved: () => saved,
+    persist,
+    render,
+    toast,
+    esc,
+  });
   render();
   if (loaded.warning) toast(loaded.warning);
   setupOffline();

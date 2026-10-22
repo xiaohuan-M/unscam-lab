@@ -1,0 +1,7 @@
+# Preserve byte-exact reference snapshots on every platform.
+public/reference/** -text
+*.pdf binary
+*.epub binary
+*.apkg binary
+*.zip binary
+*.png binary

@@ -1,7 +1,12 @@
 import { restoreSession } from "../engine.js";
 export const STORAGE_KEY = "unscam-v2";
 export const emptyProgress = () => ({
-  version: 2,
+  version: 3,
+  puzzles: {},
+  read: {},
+  selfcheck: {},
+  theme: "light",
+  lastArticle: null,
   results: {},
   reviews: {},
   mistakes: {},
@@ -12,6 +17,26 @@ export const emptyProgress = () => ({
 const record = (v) => !!v && typeof v === "object" && !Array.isArray(v);
 const finite = (v, a, b) => Number.isFinite(v) && v >= a && v <= b;
 const validDate = (v) => finite(v, 0, 8640000000000000);
+export function validatePuzzles(raw, strict = false) {
+  const out = {};
+  if (!record(raw)) return out;
+  for (const [id, r] of Object.entries(raw)) {
+    if (
+      !/^ch0[12]-0[1-6]$/.test(id) ||
+      !record(r) ||
+      r.solved !== true ||
+      !Number.isInteger(r.stars) ||
+      !finite(r.stars, 1, 3) ||
+      !Number.isInteger(r.best) ||
+      !finite(r.best, 0, 86400000)
+    ) {
+      if (strict) throw Error("推理存档无效");
+      continue;
+    }
+    out[id] = { solved: true, stars: r.stars, best: r.best };
+  }
+  return out;
+}
 /** Whitelist fields: imports cannot restore keys, HTML, chat or arbitrary state. */
 export function validateProgress(
   raw,
@@ -21,7 +46,7 @@ export function validateProgress(
 ) {
   if (
     !record(raw) ||
-    ![1, 2].includes(raw.version) ||
+    ![1, 2, 3].includes(raw.version) ||
     !record(raw.results) ||
     !record(raw.reviews)
   )
@@ -87,18 +112,48 @@ export function validateProgress(
       }
       p.mistakes[id] = { level: r.level, due: r.due };
     }
+  p.puzzles = validatePuzzles(raw.puzzles, strict);
+  p.theme = raw.theme === "dark" ? "dark" : "light";
+  p.lastArticle = knowledge.some((a) => a.id === raw.lastArticle)
+    ? raw.lastArticle
+    : null;
+  for (const [id, date] of Object.entries(record(raw.read) ? raw.read : {})) {
+    if (!knowledge.some((a) => String(a.id) === id) || !validDate(date)) {
+      invalid();
+      continue;
+    }
+    p.read[id] = date;
+  }
+  for (const [id, value] of Object.entries(
+    record(raw.selfcheck) ? raw.selfcheck : {},
+  )) {
+    if (
+      !/^(?:[0-9]|[1-3][0-9]|4[0-4])$/.test(id) ||
+      !["yes", "no", "skip"].includes(value)
+    ) {
+      invalid();
+      continue;
+    }
+    p.selfcheck[id] = value;
+  }
   p.session = restoreSession(raw.session, scenarios);
   return p;
 }
 export function loadProgress(storage, scenarios, knowledge) {
   try {
     const raw = storage.getItem(STORAGE_KEY) || storage.getItem("unscam-v1");
-    if (!raw) return { data: emptyProgress() };
-    return {
-      data: validateProgress(JSON.parse(raw), scenarios, knowledge, {
-        strict: false,
-      }),
-    };
+    const parsed = raw ? JSON.parse(raw) : null;
+    const data = parsed
+      ? validateProgress(parsed, scenarios, knowledge, { strict: false })
+      : emptyProgress();
+    if (!parsed?.puzzles) {
+      try {
+        data.puzzles = validatePuzzles(
+          JSON.parse(storage.getItem("shimian.save.v1") || "{}"),
+        );
+      } catch {}
+    }
+    return { data };
   } catch {
     return {
       data: emptyProgress(),
@@ -109,6 +164,11 @@ export function loadProgress(storage, scenarios, knowledge) {
 export function mergeProgress(current, incoming) {
   const merged = {
     ...current,
+    theme: incoming.theme,
+    large: incoming.large,
+    lastArticle: current.lastArticle || incoming.lastArticle,
+    read: { ...incoming.read, ...current.read },
+    selfcheck: { ...incoming.selfcheck, ...current.selfcheck },
     results: { ...current.results },
     reviews: { ...current.reviews },
     mistakes: { ...current.mistakes },
@@ -131,9 +191,44 @@ export function mergeProgress(current, incoming) {
         ? { level: Math.min(old.level, r.level), due: Math.min(old.due, r.due) }
         : r;
     }
+  merged.puzzles = { ...current.puzzles };
+  for (const [id, r] of Object.entries(incoming.puzzles || {})) {
+    const old = merged.puzzles[id];
+    merged.puzzles[id] = old
+      ? {
+          solved: true,
+          stars: Math.max(old.stars, r.stars),
+          best: Math.min(old.best, r.best),
+        }
+      : r;
+  }
   return merged;
 }
 export function backup(progress) {
-  const { version, results, reviews, mistakes, large, mode } = progress;
-  return { version, results, reviews, mistakes, large, mode };
+  const {
+    version,
+    results,
+    reviews,
+    mistakes,
+    large,
+    mode,
+    read,
+    selfcheck,
+    theme,
+    lastArticle,
+    puzzles,
+  } = progress;
+  return {
+    version,
+    results,
+    reviews,
+    mistakes,
+    large,
+    mode,
+    read,
+    selfcheck,
+    theme,
+    lastArticle,
+    puzzles,
+  };
 }

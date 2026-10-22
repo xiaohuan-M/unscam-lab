@@ -24,7 +24,9 @@ SOFTWARE.
 
 ## 教育文本与知识数据 — CC BY-NC-SA 4.0
 
-public/data/knowledge.json 摘自 QERSSD/HowToAvoidScams，署名 QERSSD。
+public/data/knowledge.json 完整导入 QERSSD/HowToAvoidScams，署名 QERSSD。
+public/reference/ 与完整源码 ZIP 保留其所有原始文件与许可；public/classic/ 的游戏代码由 QERSSD 原作改编，保留 MIT 版权声明于 public/reference/LICENSE。
+原作自查、术语、专题、下载材料及其改编同样适用原作文字许可。
 public/data/scenarios.json 与页面中的教育文本由 Unscam Lab contributors 创作。
 这些文本与数据以 CC BY-NC-SA 4.0 分发，不属于上述 MIT 代码许可。
 需署名、仅限非商业用途，演绎版本须相同方式共享。
