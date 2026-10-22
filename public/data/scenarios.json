@@ -1,0 +1,1646 @@
+[
+  {
+    "id": "refund",
+    "title": "快递没丢，钱差点丢了",
+    "category": "网购理赔",
+    "desc": "包裹的名字、地址都对得上。这个电话，可信吗？",
+    "actor": "理赔专员",
+    "skill": "保护账户",
+    "minutes": 3,
+    "level": "入门",
+    "nodes": {
+      "start": {
+        "text": "您的包裹运输中损坏，可以赔付 300 元。请先加我处理。",
+        "choices": [
+          {
+            "id": "verify",
+            "text": "打开购物 App，从订单页联系官方客服",
+            "next": "safe",
+            "lesson": "理赔无需向陌生人转账认证。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "ask",
+            "text": "先加好友，问一下具体流程",
+            "next": "proof",
+            "lesson": "继续交流不代表同意；关键是接下来如何核验。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "pause",
+            "text": "暂停，找可信的人一起核实",
+            "next": "safe",
+            "lesson": "跳出时间压力，允许自己先不作决定。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "proof": {
+        "text": "对方发来：客服发来的理赔截图。为了收到赔款，请先转 500 元认证账户。",
+        "choices": [
+          {
+            "id": "independent",
+            "text": "打开购物 App，从订单页联系官方客服",
+            "next": "safe",
+            "lesson": "截图可以伪造，应从自己找到的入口核验。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "trust",
+            "text": "先转 500 元，尽快处理",
+            "next": "pressure",
+            "lesson": "理赔无需向陌生人转账认证。",
+            "loss": 500,
+            "privacy": 0
+          },
+          {
+            "id": "challenge",
+            "text": "追问：我为什么必须这样做？",
+            "next": "challenge",
+            "lesson": "向对方追问能收集信息，但不能替代外部核实。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "challenge": {
+        "text": "对方说：“大家都是这样办理的，你再犹豫就错过了。” 为了收到赔款，请先转 500 元认证账户。",
+        "choices": [
+          {
+            "id": "exit",
+            "text": "打开购物 App，从订单页联系官方客服",
+            "next": "safe",
+            "lesson": "拒绝把对方的解释当作独立证据。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "agree",
+            "text": "先转 500 元，尽快处理",
+            "next": "pressure",
+            "lesson": "理赔无需向陌生人转账认证。",
+            "loss": 500,
+            "privacy": 0
+          }
+        ]
+      },
+      "pressure": {
+        "text": "系统显示认证未完成，需要再转 2000 元才能解冻。",
+        "choices": [
+          {
+            "id": "stop",
+            "text": "停止操作，保存证据并寻求官方帮助",
+            "next": "recovered",
+            "lesson": "已经投入的成本不该成为继续损失的理由。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "more",
+            "text": "再付 2000 元取回前款",
+            "next": "loss",
+            "lesson": "理赔无需向陌生人转账认证。",
+            "loss": 2000,
+            "privacy": 0
+          }
+        ]
+      }
+    },
+    "clues": [
+      {
+        "text": "对方知道订单信息",
+        "why": "准确的信息可以来自泄露，不能证明来电身份。"
+      },
+      {
+        "text": "要开屏幕共享才能核验账户",
+        "why": "共享可能暴露验证码、余额与操作过程。"
+      },
+      {
+        "text": "客服发来的理赔截图",
+        "why": "截图可以伪造，应从自己找到的入口核验。"
+      }
+    ],
+    "lesson": "理赔无需向陌生人转账认证。",
+    "transfer": {
+      "question": "对方说可以不共享屏幕，只要提供短信里的支付验证码。怎么办？",
+      "options": [
+        "验证码只说一次应该没事",
+        "拒绝提供，从原订单入口核实",
+        "让对方先说出订单号"
+      ],
+      "answer": 1,
+      "explanation": "改变措辞不改变风险：支付验证码不应交给陌生联系人。"
+    }
+  },
+  {
+    "id": "job",
+    "title": "第一笔佣金，真的到账了",
+    "category": "兼职刷单",
+    "desc": "群里的人都晒收益，你也收到了一笔小红包。",
+    "actor": "任务管理员",
+    "skill": "识别诱饵",
+    "minutes": 4,
+    "level": "入门",
+    "nodes": {
+      "start": {
+        "text": "完成体验任务可以领佣金，今天有几个高回报名额。",
+        "choices": [
+          {
+            "id": "verify",
+            "text": "去独立招聘渠道核实工作内容",
+            "next": "safe",
+            "lesson": "收到小额返利不代表后续资金安全。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "ask",
+            "text": "先领体验任务看看",
+            "next": "proof",
+            "lesson": "继续交流不代表同意；关键是接下来如何核验。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "pause",
+            "text": "暂停，找可信的人一起核实",
+            "next": "safe",
+            "lesson": "跳出时间压力，允许自己先不作决定。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "proof": {
+        "text": "对方发来：一笔小额返款。接下来需垫付 300 元，完成后返本金和佣金。",
+        "choices": [
+          {
+            "id": "independent",
+            "text": "去独立招聘渠道核实工作内容",
+            "next": "safe",
+            "lesson": "小额返款只能证明对方付过一次钱。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "trust",
+            "text": "垫付 300 元试一次",
+            "next": "pressure",
+            "lesson": "收到小额返利不代表后续资金安全。",
+            "loss": 300,
+            "privacy": 0
+          },
+          {
+            "id": "challenge",
+            "text": "追问：我为什么必须这样做？",
+            "next": "challenge",
+            "lesson": "向对方追问能收集信息，但不能替代外部核实。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "challenge": {
+        "text": "对方说：“大家都是这样办理的，你再犹豫就错过了。” 接下来需垫付 300 元，完成后返本金和佣金。",
+        "choices": [
+          {
+            "id": "exit",
+            "text": "去独立招聘渠道核实工作内容",
+            "next": "safe",
+            "lesson": "拒绝把对方的解释当作独立证据。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "agree",
+            "text": "垫付 300 元试一次",
+            "next": "pressure",
+            "lesson": "收到小额返利不代表后续资金安全。",
+            "loss": 300,
+            "privacy": 0
+          }
+        ]
+      },
+      "pressure": {
+        "text": "这是一组联单，还差 1800 元，退出就不能结算。",
+        "choices": [
+          {
+            "id": "stop",
+            "text": "停止操作，保存证据并寻求官方帮助",
+            "next": "recovered",
+            "lesson": "已经投入的成本不该成为继续损失的理由。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "more",
+            "text": "再垫 1800 元做完联单",
+            "next": "loss",
+            "lesson": "收到小额返利不代表后续资金安全。",
+            "loss": 1800,
+            "privacy": 0
+          }
+        ]
+      }
+    },
+    "clues": [
+      {
+        "text": "群里不断有人晒到账图",
+        "why": "群体背书不等于独立证据，群友可能是托。"
+      },
+      {
+        "text": "提现条件临时增加",
+        "why": "不断新增付款条件是沉没成本陷阱。"
+      },
+      {
+        "text": "一笔小额返款",
+        "why": "小额返款只能证明对方付过一次钱。"
+      }
+    ],
+    "lesson": "收到小额返利不代表后续资金安全。",
+    "transfer": {
+      "question": "前两次垫款都返了钱，这次金额更大。哪条判断更可靠？",
+      "options": [
+        "小额返款不能证明后续安全",
+        "已经返过两次说明可信",
+        "群内其他人赚钱就可以继续"
+      ],
+      "answer": 0,
+      "explanation": "过去的小额返利可能是诱饵，不能替代对工作和资金用途的核验。"
+    }
+  },
+  {
+    "id": "voice",
+    "title": "像极了妈妈的声音",
+    "category": "AI冒充",
+    "desc": "熟悉的声音说她换了手机，急着用钱。",
+    "actor": "语音来电",
+    "skill": "独立核验",
+    "minutes": 5,
+    "level": "入门",
+    "nodes": {
+      "start": {
+        "text": "我手机坏了，借别人电话。现在急需一笔钱，别告诉家里人。",
+        "choices": [
+          {
+            "id": "verify",
+            "text": "挂断，拨打通讯录里原来的电话",
+            "next": "safe",
+            "lesson": "用原有联系方式或线下渠道交叉核验紧急求助。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "ask",
+            "text": "继续听，让对方说清楚",
+            "next": "proof",
+            "lesson": "继续交流不代表同意；关键是接下来如何核验。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "pause",
+            "text": "暂停，找可信的人一起核实",
+            "next": "safe",
+            "lesson": "跳出时间压力，允许自己先不作决定。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "proof": {
+        "text": "对方发来：对方说出了家庭细节。来不及解释，先转 800 元到这个临时账户。",
+        "choices": [
+          {
+            "id": "independent",
+            "text": "挂断，拨打通讯录里原来的电话",
+            "next": "safe",
+            "lesson": "公开信息和泄露数据也能拼成可信故事。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "trust",
+            "text": "转 800 元应急",
+            "next": "pressure",
+            "lesson": "用原有联系方式或线下渠道交叉核验紧急求助。",
+            "loss": 800,
+            "privacy": 0
+          },
+          {
+            "id": "challenge",
+            "text": "追问：我为什么必须这样做？",
+            "next": "challenge",
+            "lesson": "向对方追问能收集信息，但不能替代外部核实。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "challenge": {
+        "text": "对方说：“大家都是这样办理的，你再犹豫就错过了。” 来不及解释，先转 800 元到这个临时账户。",
+        "choices": [
+          {
+            "id": "exit",
+            "text": "挂断，拨打通讯录里原来的电话",
+            "next": "safe",
+            "lesson": "拒绝把对方的解释当作独立证据。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "agree",
+            "text": "转 800 元应急",
+            "next": "pressure",
+            "lesson": "用原有联系方式或线下渠道交叉核验紧急求助。",
+            "loss": 800,
+            "privacy": 0
+          }
+        ]
+      },
+      "pressure": {
+        "text": "还差 3000 元，千万别回拨，电话不方便接。",
+        "choices": [
+          {
+            "id": "stop",
+            "text": "停止操作，保存证据并寻求官方帮助",
+            "next": "recovered",
+            "lesson": "已经投入的成本不该成为继续损失的理由。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "more",
+            "text": "再转 3000 元",
+            "next": "loss",
+            "lesson": "用原有联系方式或线下渠道交叉核验紧急求助。",
+            "loss": 3000,
+            "privacy": 0
+          }
+        ]
+      }
+    },
+    "clues": [
+      {
+        "text": "声音很熟悉",
+        "why": "音视频都可以被合成，声音不是独立身份核验。"
+      },
+      {
+        "text": "阻止你联系其他家人",
+        "why": "隔离求助让你来不及核对事实。"
+      },
+      {
+        "text": "对方说出了家庭细节",
+        "why": "公开信息和泄露数据也能拼成可信故事。"
+      }
+    ],
+    "lesson": "用原有联系方式或线下渠道交叉核验紧急求助。",
+    "transfer": {
+      "question": "对方换成视频通话，脸也像家人。你应该？",
+      "options": [
+        "视频不会造假，可以转账",
+        "请他再拍一张自拍",
+        "用原有号码回拨或联系其他家人核实"
+      ],
+      "answer": 2,
+      "explanation": "声音和脸都不能独立确认身份。使用不由来电者控制的渠道。"
+    }
+  },
+  {
+    "id": "ticket",
+    "title": "只剩最后两张票",
+    "category": "票务交易",
+    "desc": "想去的演出售罄，有人说能原价转让。",
+    "actor": "转票网友",
+    "skill": "抵抗催促",
+    "minutes": 3,
+    "level": "入门",
+    "nodes": {
+      "start": {
+        "text": "我临时去不了，原价给你。很多人排队，快决定。",
+        "choices": [
+          {
+            "id": "verify",
+            "text": "只使用支持核验与担保的正规交易渠道",
+            "next": "safe",
+            "lesson": "不凭截图向陌生人转账，核验票务平台规则。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "ask",
+            "text": "先看电子票截图",
+            "next": "proof",
+            "lesson": "继续交流不代表同意；关键是接下来如何核验。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "pause",
+            "text": "暂停，找可信的人一起核实",
+            "next": "safe",
+            "lesson": "跳出时间压力，允许自己先不作决定。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "proof": {
+        "text": "对方发来：带姓名的电子票图片。先付 400 元定金，之后我转票给你。",
+        "choices": [
+          {
+            "id": "independent",
+            "text": "只使用支持核验与担保的正规交易渠道",
+            "next": "safe",
+            "lesson": "图片不是可核销凭证，也可能被重复出售。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "trust",
+            "text": "转 400 元锁票",
+            "next": "pressure",
+            "lesson": "不凭截图向陌生人转账，核验票务平台规则。",
+            "loss": 400,
+            "privacy": 0
+          },
+          {
+            "id": "challenge",
+            "text": "追问：我为什么必须这样做？",
+            "next": "challenge",
+            "lesson": "向对方追问能收集信息，但不能替代外部核实。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "challenge": {
+        "text": "对方说：“大家都是这样办理的，你再犹豫就错过了。” 先付 400 元定金，之后我转票给你。",
+        "choices": [
+          {
+            "id": "exit",
+            "text": "只使用支持核验与担保的正规交易渠道",
+            "next": "safe",
+            "lesson": "拒绝把对方的解释当作独立证据。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "agree",
+            "text": "转 400 元锁票",
+            "next": "pressure",
+            "lesson": "不凭截图向陌生人转账，核验票务平台规则。",
+            "loss": 400,
+            "privacy": 0
+          }
+        ]
+      },
+      "pressure": {
+        "text": "实名改签要再交 600 元，十分钟内有效。",
+        "choices": [
+          {
+            "id": "stop",
+            "text": "停止操作，保存证据并寻求官方帮助",
+            "next": "recovered",
+            "lesson": "已经投入的成本不该成为继续损失的理由。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "more",
+            "text": "再付 600 元改签费",
+            "next": "loss",
+            "lesson": "不凭截图向陌生人转账，核验票务平台规则。",
+            "loss": 600,
+            "privacy": 0
+          }
+        ]
+      }
+    },
+    "clues": [
+      {
+        "text": "制造稀缺和倒计时",
+        "why": "时间压力会让人跳过交易核验。"
+      },
+      {
+        "text": "要求离开平台付款",
+        "why": "站外转账会失去平台内的交易保障。"
+      },
+      {
+        "text": "带姓名的电子票图片",
+        "why": "图片不是可核销凭证，也可能被重复出售。"
+      }
+    ],
+    "lesson": "不凭截图向陌生人转账，核验票务平台规则。",
+    "transfer": {
+      "question": "卖家发来身份证照片，要求离开票务平台付款。怎么办？",
+      "options": [
+        "身份证照片不等于担保，留在正规渠道",
+        "有身份证就可追责，可以付款",
+        "先付一半降低风险"
+      ],
+      "answer": 0,
+      "explanation": "身份照片也可能被盗用，不应替代交易平台的核验和保障。"
+    }
+  },
+  {
+    "id": "invest",
+    "title": "老师带你稳稳赚钱",
+    "category": "投资荐股",
+    "desc": "群里老师连续预测正确，大家说这是内部机会。",
+    "actor": "投资助理",
+    "skill": "识别诱饵",
+    "minutes": 4,
+    "level": "进阶",
+    "nodes": {
+      "start": {
+        "text": "我们有专属通道，先观察，老师的战绩都在群里。",
+        "choices": [
+          {
+            "id": "verify",
+            "text": "独立核实机构资质，不向个人账户付款",
+            "next": "safe",
+            "lesson": "账面盈利、群内口碑都不能证明投资平台可靠。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "ask",
+            "text": "再观察几天收益截图",
+            "next": "proof",
+            "lesson": "继续交流不代表同意；关键是接下来如何核验。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "pause",
+            "text": "暂停，找可信的人一起核实",
+            "next": "safe",
+            "lesson": "跳出时间压力，允许自己先不作决定。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "proof": {
+        "text": "对方发来：模拟账户显示持续盈利。先入金 1000 元体验，额度有限。",
+        "choices": [
+          {
+            "id": "independent",
+            "text": "独立核实机构资质，不向个人账户付款",
+            "next": "safe",
+            "lesson": "页面上的数字不代表可提现资产。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "trust",
+            "text": "转 1000 元试投",
+            "next": "pressure",
+            "lesson": "账面盈利、群内口碑都不能证明投资平台可靠。",
+            "loss": 1000,
+            "privacy": 0
+          },
+          {
+            "id": "challenge",
+            "text": "追问：我为什么必须这样做？",
+            "next": "challenge",
+            "lesson": "向对方追问能收集信息，但不能替代外部核实。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "challenge": {
+        "text": "对方说：“大家都是这样办理的，你再犹豫就错过了。” 先入金 1000 元体验，额度有限。",
+        "choices": [
+          {
+            "id": "exit",
+            "text": "独立核实机构资质，不向个人账户付款",
+            "next": "safe",
+            "lesson": "拒绝把对方的解释当作独立证据。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "agree",
+            "text": "转 1000 元试投",
+            "next": "pressure",
+            "lesson": "账面盈利、群内口碑都不能证明投资平台可靠。",
+            "loss": 1000,
+            "privacy": 0
+          }
+        ]
+      },
+      "pressure": {
+        "text": "盈利要交 3000 元税费才能提现。",
+        "choices": [
+          {
+            "id": "stop",
+            "text": "停止操作，保存证据并寻求官方帮助",
+            "next": "recovered",
+            "lesson": "已经投入的成本不该成为继续损失的理由。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "more",
+            "text": "交 3000 元取回收益",
+            "next": "loss",
+            "lesson": "账面盈利、群内口碑都不能证明投资平台可靠。",
+            "loss": 3000,
+            "privacy": 0
+          }
+        ]
+      }
+    },
+    "clues": [
+      {
+        "text": "只展示成功记录",
+        "why": "选择性展示和伪造记录会制造能力幻觉。"
+      },
+      {
+        "text": "承诺收益又要求私下转账",
+        "why": "收益承诺不能替代持牌资格与资金安全核验。"
+      },
+      {
+        "text": "模拟账户显示持续盈利",
+        "why": "页面上的数字不代表可提现资产。"
+      }
+    ],
+    "lesson": "账面盈利、群内口碑都不能证明投资平台可靠。",
+    "transfer": {
+      "question": "账户显示盈利，但提现前要求额外交税。下一步？",
+      "options": [
+        "盈利足够覆盖就交",
+        "暂停付款，独立核实平台与费用",
+        "让群里的老师确认"
+      ],
+      "answer": 1,
+      "explanation": "页面数字与群内确认都受同一方控制，不能成为独立证据。"
+    }
+  },
+  {
+    "id": "police",
+    "title": "“不要告诉任何人”",
+    "category": "冒充机关",
+    "desc": "来电称你涉及案件，还发来了带公章的文件。",
+    "actor": "自称办案人员",
+    "skill": "抵抗权威",
+    "minutes": 5,
+    "level": "进阶",
+    "nodes": {
+      "start": {
+        "text": "你的账户涉及异常交易。请单独到安静的地方配合。",
+        "choices": [
+          {
+            "id": "verify",
+            "text": "结束来电，通过官方公开渠道核实",
+            "next": "safe",
+            "lesson": "遇到威胁也先暂停，通过独立官方渠道核实。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "ask",
+            "text": "先看看对方发来的文件",
+            "next": "proof",
+            "lesson": "继续交流不代表同意；关键是接下来如何核验。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "pause",
+            "text": "暂停，找可信的人一起核实",
+            "next": "safe",
+            "lesson": "跳出时间压力，允许自己先不作决定。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "proof": {
+        "text": "对方发来：要求保持通话并保密。为证明资金清白，请先转 1000 元核验。",
+        "choices": [
+          {
+            "id": "independent",
+            "text": "结束来电，通过官方公开渠道核实",
+            "next": "safe",
+            "lesson": "把你与外部核验隔离，是重要危险信号。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "trust",
+            "text": "转 1000 元配合",
+            "next": "pressure",
+            "lesson": "遇到威胁也先暂停，通过独立官方渠道核实。",
+            "loss": 1000,
+            "privacy": 0
+          },
+          {
+            "id": "challenge",
+            "text": "追问：我为什么必须这样做？",
+            "next": "challenge",
+            "lesson": "向对方追问能收集信息，但不能替代外部核实。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "challenge": {
+        "text": "对方说：“大家都是这样办理的，你再犹豫就错过了。” 为证明资金清白，请先转 1000 元核验。",
+        "choices": [
+          {
+            "id": "exit",
+            "text": "结束来电，通过官方公开渠道核实",
+            "next": "safe",
+            "lesson": "拒绝把对方的解释当作独立证据。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "agree",
+            "text": "转 1000 元配合",
+            "next": "pressure",
+            "lesson": "遇到威胁也先暂停，通过独立官方渠道核实。",
+            "loss": 1000,
+            "privacy": 0
+          }
+        ]
+      },
+      "pressure": {
+        "text": "还有 4000 元需要一起核验，不然无法结案。",
+        "choices": [
+          {
+            "id": "stop",
+            "text": "停止操作，保存证据并寻求官方帮助",
+            "next": "recovered",
+            "lesson": "已经投入的成本不该成为继续损失的理由。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "more",
+            "text": "再转 4000 元",
+            "next": "loss",
+            "lesson": "遇到威胁也先暂停，通过独立官方渠道核实。",
+            "loss": 4000,
+            "privacy": 0
+          }
+        ]
+      }
+    },
+    "clues": [
+      {
+        "text": "展示带公章的文件",
+        "why": "公章截图与来电显示都不能独立证明身份。"
+      },
+      {
+        "text": "要求转到所谓安全账户",
+        "why": "不要按陌生来电指示转账核查资金。"
+      },
+      {
+        "text": "要求保持通话并保密",
+        "why": "把你与外部核验隔离，是重要危险信号。"
+      }
+    ],
+    "lesson": "遇到威胁也先暂停，通过独立官方渠道核实。",
+    "transfer": {
+      "question": "“工作人员”让你下载远程控制工具核验资金，怎么办？",
+      "options": [
+        "只控制几分钟没关系",
+        "对方有公章就配合",
+        "停止操作，通过官方公开渠道核实"
+      ],
+      "answer": 2,
+      "explanation": "远程控制会扩大风险，独立核验比继续听对方解释更可靠。"
+    }
+  },
+  {
+    "id": "loan",
+    "title": "到账前，先交手续费",
+    "category": "网贷陷阱",
+    "desc": "急需周转时，一个“零门槛”贷款广告出现了。",
+    "actor": "贷款客服",
+    "skill": "保护账户",
+    "minutes": 3,
+    "level": "进阶",
+    "nodes": {
+      "start": {
+        "text": "无需抵押，线上审批。你已获得预授信额度。",
+        "choices": [
+          {
+            "id": "verify",
+            "text": "通过正规金融机构核实产品和费用",
+            "next": "safe",
+            "lesson": "不要为未到账的贷款不断支付解冻或认证费用。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "ask",
+            "text": "先问问额度",
+            "next": "proof",
+            "lesson": "继续交流不代表同意；关键是接下来如何核验。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "pause",
+            "text": "暂停，找可信的人一起核实",
+            "next": "safe",
+            "lesson": "跳出时间压力，允许自己先不作决定。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "proof": {
+        "text": "对方发来：所谓授信合同截图。银行卡号填错了，先付 600 元改号保证金。",
+        "choices": [
+          {
+            "id": "independent",
+            "text": "通过正规金融机构核实产品和费用",
+            "next": "safe",
+            "lesson": "截图不能替代独立核验机构与正式合同。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "trust",
+            "text": "支付 600 元保证金",
+            "next": "pressure",
+            "lesson": "不要为未到账的贷款不断支付解冻或认证费用。",
+            "loss": 600,
+            "privacy": 0
+          },
+          {
+            "id": "challenge",
+            "text": "追问：我为什么必须这样做？",
+            "next": "challenge",
+            "lesson": "向对方追问能收集信息，但不能替代外部核实。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "challenge": {
+        "text": "对方说：“大家都是这样办理的，你再犹豫就错过了。” 银行卡号填错了，先付 600 元改号保证金。",
+        "choices": [
+          {
+            "id": "exit",
+            "text": "通过正规金融机构核实产品和费用",
+            "next": "safe",
+            "lesson": "拒绝把对方的解释当作独立证据。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "agree",
+            "text": "支付 600 元保证金",
+            "next": "pressure",
+            "lesson": "不要为未到账的贷款不断支付解冻或认证费用。",
+            "loss": 600,
+            "privacy": 0
+          }
+        ]
+      },
+      "pressure": {
+        "text": "还需要 1200 元解冻费才能到账。",
+        "choices": [
+          {
+            "id": "stop",
+            "text": "停止操作，保存证据并寻求官方帮助",
+            "next": "recovered",
+            "lesson": "已经投入的成本不该成为继续损失的理由。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "more",
+            "text": "再交 1200 元",
+            "next": "loss",
+            "lesson": "不要为未到账的贷款不断支付解冻或认证费用。",
+            "loss": 1200,
+            "privacy": 0
+          }
+        ]
+      }
+    },
+    "clues": [
+      {
+        "text": "未经核实就保证能放款",
+        "why": "预授信页面不等于真实授信或到账。"
+      },
+      {
+        "text": "先收费再放款",
+        "why": "费用与放款前置绑定需要高度警惕。"
+      },
+      {
+        "text": "所谓授信合同截图",
+        "why": "截图不能替代独立核验机构与正式合同。"
+      }
+    ],
+    "lesson": "不要为未到账的贷款不断支付解冻或认证费用。",
+    "transfer": {
+      "question": "贷款客服把“解冻费”改称“可退保险金”。应如何判断？",
+      "options": [
+        "换了名字不代表风险消失，先核实机构与费用",
+        "承诺可退就付",
+        "费用低于额度就付"
+      ],
+      "answer": 0,
+      "explanation": "关注真实资金流与独立核验，而不是收费名称。"
+    }
+  },
+  {
+    "id": "love",
+    "title": "聊了三十天的人",
+    "category": "情感诱导",
+    "desc": "对方记得你的喜好，每晚都会问你有没有吃饭。",
+    "actor": "认识的网友",
+    "skill": "守住边界",
+    "minutes": 4,
+    "level": "进阶",
+    "nodes": {
+      "start": {
+        "text": "我最近有一个收益不错的副业，想带你一起，为我们的未来准备。",
+        "choices": [
+          {
+            "id": "verify",
+            "text": "把感情与资金决策分开，拒绝转账",
+            "next": "safe",
+            "lesson": "不需要用转账或投资证明感情。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "ask",
+            "text": "先听听项目是什么",
+            "next": "proof",
+            "lesson": "继续交流不代表同意；关键是接下来如何核验。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "pause",
+            "text": "暂停，找可信的人一起核实",
+            "next": "safe",
+            "lesson": "跳出时间压力，允许自己先不作决定。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "proof": {
+        "text": "对方发来：对方展示自己的盈利。先投 1000 元，我陪着你，不会让你吃亏。",
+        "choices": [
+          {
+            "id": "independent",
+            "text": "把感情与资金决策分开，拒绝转账",
+            "next": "safe",
+            "lesson": "他人的收益截图不能证明项目真实性。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "trust",
+            "text": "转 1000 元支持对方",
+            "next": "pressure",
+            "lesson": "不需要用转账或投资证明感情。",
+            "loss": 1000,
+            "privacy": 0
+          },
+          {
+            "id": "challenge",
+            "text": "追问：我为什么必须这样做？",
+            "next": "challenge",
+            "lesson": "向对方追问能收集信息，但不能替代外部核实。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "challenge": {
+        "text": "对方说：“大家都是这样办理的，你再犹豫就错过了。” 先投 1000 元，我陪着你，不会让你吃亏。",
+        "choices": [
+          {
+            "id": "exit",
+            "text": "把感情与资金决策分开，拒绝转账",
+            "next": "safe",
+            "lesson": "拒绝把对方的解释当作独立证据。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "agree",
+            "text": "转 1000 元支持对方",
+            "next": "pressure",
+            "lesson": "不需要用转账或投资证明感情。",
+            "loss": 1000,
+            "privacy": 0
+          }
+        ]
+      },
+      "pressure": {
+        "text": "再加 2000 元才能升级提现，你不信任我吗？",
+        "choices": [
+          {
+            "id": "stop",
+            "text": "停止操作，保存证据并寻求官方帮助",
+            "next": "recovered",
+            "lesson": "已经投入的成本不该成为继续损失的理由。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "more",
+            "text": "追加 2000 元证明信任",
+            "next": "loss",
+            "lesson": "不需要用转账或投资证明感情。",
+            "loss": 2000,
+            "privacy": 0
+          }
+        ]
+      }
+    },
+    "clues": [
+      {
+        "text": "亲密关系与投资绑定",
+        "why": "情感信任不能替代对资金去向的核验。"
+      },
+      {
+        "text": "拒绝核验却催促出资",
+        "why": "持续回避独立核验是风险信号。"
+      },
+      {
+        "text": "对方展示自己的盈利",
+        "why": "他人的收益截图不能证明项目真实性。"
+      }
+    ],
+    "lesson": "不需要用转账或投资证明感情。",
+    "transfer": {
+      "question": "网友说“不转钱就是不信任我”。怎样回应？",
+      "options": [
+        "转小额证明关系",
+        "感情不需要用转账证明，拒绝资金要求",
+        "借钱转给对方"
+      ],
+      "answer": 1,
+      "explanation": "情感压力不应替代独立的资金决策。"
+    }
+  },
+  {
+    "id": "account",
+    "title": "账号就借用一小时",
+    "category": "账户出借",
+    "desc": "熟人说只是帮忙收一笔款，钱马上就转走。",
+    "actor": "熟人朋友",
+    "skill": "守住边界",
+    "minutes": 5,
+    "level": "进阶",
+    "nodes": {
+      "start": {
+        "text": "我账户限额了，借你的收款码用一下，事后请你吃饭。",
+        "choices": [
+          {
+            "id": "verify",
+            "text": "拒绝代收转不明资金",
+            "next": "safe",
+            "lesson": "拒绝出租出借账户与代收转来源不明资金；责任需依具体事实判断。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "ask",
+            "text": "先问金额和用途",
+            "next": "proof",
+            "lesson": "继续交流不代表同意；关键是接下来如何核验。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "pause",
+            "text": "暂停，找可信的人一起核实",
+            "next": "safe",
+            "lesson": "跳出时间压力，允许自己先不作决定。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "proof": {
+        "text": "对方发来：对方保证不出事。发我验证码，我自己操作，你不用管。",
+        "choices": [
+          {
+            "id": "independent",
+            "text": "拒绝代收转不明资金",
+            "next": "safe",
+            "lesson": "口头承诺无法消除账户风险或潜在法律责任。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "trust",
+            "text": "交出模拟验证码",
+            "next": "pressure",
+            "lesson": "拒绝出租出借账户与代收转来源不明资金；责任需依具体事实判断。",
+            "loss": 0,
+            "privacy": 45
+          },
+          {
+            "id": "challenge",
+            "text": "追问：我为什么必须这样做？",
+            "next": "challenge",
+            "lesson": "向对方追问能收集信息，但不能替代外部核实。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "challenge": {
+        "text": "对方说：“大家都是这样办理的，你再犹豫就错过了。” 发我验证码，我自己操作，你不用管。",
+        "choices": [
+          {
+            "id": "exit",
+            "text": "拒绝代收转不明资金",
+            "next": "safe",
+            "lesson": "拒绝把对方的解释当作独立证据。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "agree",
+            "text": "交出模拟验证码",
+            "next": "pressure",
+            "lesson": "拒绝出租出借账户与代收转来源不明资金；责任需依具体事实判断。",
+            "loss": 0,
+            "privacy": 45
+          }
+        ]
+      },
+      "pressure": {
+        "text": "再把另一张卡绑定上，才能把款转出去。",
+        "choices": [
+          {
+            "id": "stop",
+            "text": "停止操作，保存证据并寻求官方帮助",
+            "next": "recovered",
+            "lesson": "已经投入的成本不该成为继续损失的理由。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "more",
+            "text": "继续交出另一账户控制权",
+            "next": "loss",
+            "lesson": "拒绝出租出借账户与代收转来源不明资金；责任需依具体事实判断。",
+            "loss": 0,
+            "privacy": 45
+          }
+        ]
+      }
+    },
+    "clues": [
+      {
+        "text": "对资金来源解释含糊",
+        "why": "无法解释的资金流转不能因熟人关系而忽略。"
+      },
+      {
+        "text": "需要验证码或账户控制权",
+        "why": "交出验证信息会让你失去控制。"
+      },
+      {
+        "text": "对方保证不出事",
+        "why": "口头承诺无法消除账户风险或潜在法律责任。"
+      }
+    ],
+    "lesson": "拒绝出租出借账户与代收转来源不明资金；责任需依具体事实判断。",
+    "transfer": {
+      "question": "朋友说卡不用交出来，只帮忙收款后转走，是否足够安全？",
+      "options": [
+        "卡在手里就没有风险",
+        "只做一次就没事",
+        "拒绝代收转来源不明资金"
+      ],
+      "answer": 2,
+      "explanation": "账户留在手里不代表资金来源合法或没有风险。"
+    }
+  },
+  {
+    "id": "health",
+    "title": "爸妈的专属福利",
+    "category": "养老骗局",
+    "desc": "免费讲座里，工作人员每天嘘寒问暖。",
+    "actor": "健康顾问",
+    "skill": "抵抗催促",
+    "minutes": 3,
+    "level": "进阶",
+    "nodes": {
+      "start": {
+        "text": "这款产品名额不多，今天给老朋友专享价。",
+        "choices": [
+          {
+            "id": "verify",
+            "text": "请正规医疗机构核实相关健康信息",
+            "next": "safe",
+            "lesson": "健康焦虑和限时优惠都不应替代专业核实。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "ask",
+            "text": "先听听别人使用感受",
+            "next": "proof",
+            "lesson": "继续交流不代表同意；关键是接下来如何核验。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "pause",
+            "text": "暂停，找可信的人一起核实",
+            "next": "safe",
+            "lesson": "跳出时间压力，允许自己先不作决定。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "proof": {
+        "text": "对方发来：台上的康复故事。先交 800 元预订，过期没有这个价。",
+        "choices": [
+          {
+            "id": "independent",
+            "text": "请正规医疗机构核实相关健康信息",
+            "next": "safe",
+            "lesson": "故事可能被筛选或编造，不能替代证据。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "trust",
+            "text": "交 800 元预订",
+            "next": "pressure",
+            "lesson": "健康焦虑和限时优惠都不应替代专业核实。",
+            "loss": 800,
+            "privacy": 0
+          },
+          {
+            "id": "challenge",
+            "text": "追问：我为什么必须这样做？",
+            "next": "challenge",
+            "lesson": "向对方追问能收集信息，但不能替代外部核实。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "challenge": {
+        "text": "对方说：“大家都是这样办理的，你再犹豫就错过了。” 先交 800 元预订，过期没有这个价。",
+        "choices": [
+          {
+            "id": "exit",
+            "text": "请正规医疗机构核实相关健康信息",
+            "next": "safe",
+            "lesson": "拒绝把对方的解释当作独立证据。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "agree",
+            "text": "交 800 元预订",
+            "next": "pressure",
+            "lesson": "健康焦虑和限时优惠都不应替代专业核实。",
+            "loss": 800,
+            "privacy": 0
+          }
+        ]
+      },
+      "pressure": {
+        "text": "升级疗程还需 2000 元，不升级前面就白做了。",
+        "choices": [
+          {
+            "id": "stop",
+            "text": "停止操作，保存证据并寻求官方帮助",
+            "next": "recovered",
+            "lesson": "已经投入的成本不该成为继续损失的理由。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "more",
+            "text": "追加 2000 元升级",
+            "next": "loss",
+            "lesson": "健康焦虑和限时优惠都不应替代专业核实。",
+            "loss": 2000,
+            "privacy": 0
+          }
+        ]
+      }
+    },
+    "clues": [
+      {
+        "text": "把日常关怀与购买绑定",
+        "why": "关怀不等于产品功效证据。"
+      },
+      {
+        "text": "用个案承诺治疗效果",
+        "why": "真实治疗应咨询正规医疗机构，不能凭见证判断。"
+      },
+      {
+        "text": "台上的康复故事",
+        "why": "故事可能被筛选或编造，不能替代证据。"
+      }
+    ],
+    "lesson": "健康焦虑和限时优惠都不应替代专业核实。",
+    "transfer": {
+      "question": "讲座有很多人声称产品有效，该依据什么决定？",
+      "options": [
+        "人数越多越可信",
+        "只要优惠大就买",
+        "咨询正规医疗机构，核实功效依据"
+      ],
+      "answer": 2,
+      "explanation": "个案故事和现场气氛不能代替可靠的健康证据。"
+    }
+  },
+  {
+    "id": "delivery",
+    "title": "一条“官方”短信",
+    "category": "钓鱼盗号",
+    "desc": "短信提示快递地址不完整，需要重新填写。",
+    "actor": "通知短信",
+    "skill": "保护账户",
+    "minutes": 4,
+    "level": "进阶",
+    "nodes": {
+      "start": {
+        "text": "您的快件地址异常，请进入补录页面完善。",
+        "choices": [
+          {
+            "id": "verify",
+            "text": "从原购物订单查询物流状态",
+            "next": "safe",
+            "lesson": "从自己找到的官方入口操作，拒绝提供支付验证码。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "ask",
+            "text": "先查看短信页面内容（模拟）",
+            "next": "proof",
+            "lesson": "继续交流不代表同意；关键是接下来如何核验。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "pause",
+            "text": "暂停，找可信的人一起核实",
+            "next": "safe",
+            "lesson": "跳出时间压力，允许自己先不作决定。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "proof": {
+        "text": "对方发来：页面和官方界面很像。请提供支付验证码验证身份。",
+        "choices": [
+          {
+            "id": "independent",
+            "text": "从原购物订单查询物流状态",
+            "next": "safe",
+            "lesson": "外观相同不能证明网站来源。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "trust",
+            "text": "提交模拟验证码",
+            "next": "pressure",
+            "lesson": "从自己找到的官方入口操作，拒绝提供支付验证码。",
+            "loss": 0,
+            "privacy": 45
+          },
+          {
+            "id": "challenge",
+            "text": "追问：我为什么必须这样做？",
+            "next": "challenge",
+            "lesson": "向对方追问能收集信息，但不能替代外部核实。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "challenge": {
+        "text": "对方说：“大家都是这样办理的，你再犹豫就错过了。” 请提供支付验证码验证身份。",
+        "choices": [
+          {
+            "id": "exit",
+            "text": "从原购物订单查询物流状态",
+            "next": "safe",
+            "lesson": "拒绝把对方的解释当作独立证据。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "agree",
+            "text": "提交模拟验证码",
+            "next": "pressure",
+            "lesson": "从自己找到的官方入口操作，拒绝提供支付验证码。",
+            "loss": 0,
+            "privacy": 45
+          }
+        ]
+      },
+      "pressure": {
+        "text": "需要再提供另一个账户验证码完成解绑。",
+        "choices": [
+          {
+            "id": "stop",
+            "text": "停止操作，保存证据并寻求官方帮助",
+            "next": "recovered",
+            "lesson": "已经投入的成本不该成为继续损失的理由。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "more",
+            "text": "继续提交模拟验证码",
+            "next": "loss",
+            "lesson": "从自己找到的官方入口操作，拒绝提供支付验证码。",
+            "loss": 0,
+            "privacy": 45
+          }
+        ]
+      }
+    },
+    "clues": [
+      {
+        "text": "短信带有快递品牌名",
+        "why": "品牌名和署名可以伪造。"
+      },
+      {
+        "text": "页面索要与配送无关的验证信息",
+        "why": "索取密码或支付验证码与改地址无关。"
+      },
+      {
+        "text": "页面和官方界面很像",
+        "why": "外观相同不能证明网站来源。"
+      }
+    ],
+    "lesson": "从自己找到的官方入口操作，拒绝提供支付验证码。",
+    "transfer": {
+      "question": "短信页面与官方 App 一模一样，可以输支付验证码吗？",
+      "options": [
+        "可以，外观能证明来源",
+        "不可以，回到自己找到的官方入口",
+        "先输入一半试试"
+      ],
+      "answer": 1,
+      "explanation": "外观可以复制，官方入口和操作目的才需要核实。"
+    }
+  },
+  {
+    "id": "recovery",
+    "title": "帮你追回被骗的钱",
+    "category": "二次诈骗",
+    "desc": "你刚受过损失，网上有人承诺快速追款。",
+    "actor": "追款团队",
+    "skill": "及时止损",
+    "minutes": 5,
+    "level": "进阶",
+    "nodes": {
+      "start": {
+        "text": "我们有内部渠道，已经定位到对方，先签服务就能追。",
+        "choices": [
+          {
+            "id": "verify",
+            "text": "保存材料，通过警方和银行官方渠道处理",
+            "next": "safe",
+            "lesson": "被骗后也不要向陌生追款人支付保证金或解冻费。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "ask",
+            "text": "问问追款过程",
+            "next": "proof",
+            "lesson": "继续交流不代表同意；关键是接下来如何核验。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "pause",
+            "text": "暂停，找可信的人一起核实",
+            "next": "safe",
+            "lesson": "跳出时间压力，允许自己先不作决定。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "proof": {
+        "text": "对方发来：展示其他人的追回案例。先付 500 元立案服务费，马上开始。",
+        "choices": [
+          {
+            "id": "independent",
+            "text": "保存材料，通过警方和银行官方渠道处理",
+            "next": "safe",
+            "lesson": "案例截图可能伪造，不能证明服务可靠。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "trust",
+            "text": "交 500 元追款费",
+            "next": "pressure",
+            "lesson": "被骗后也不要向陌生追款人支付保证金或解冻费。",
+            "loss": 500,
+            "privacy": 0
+          },
+          {
+            "id": "challenge",
+            "text": "追问：我为什么必须这样做？",
+            "next": "challenge",
+            "lesson": "向对方追问能收集信息，但不能替代外部核实。",
+            "loss": 0,
+            "privacy": 0
+          }
+        ]
+      },
+      "challenge": {
+        "text": "对方说：“大家都是这样办理的，你再犹豫就错过了。” 先付 500 元立案服务费，马上开始。",
+        "choices": [
+          {
+            "id": "exit",
+            "text": "保存材料，通过警方和银行官方渠道处理",
+            "next": "safe",
+            "lesson": "拒绝把对方的解释当作独立证据。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "agree",
+            "text": "交 500 元追款费",
+            "next": "pressure",
+            "lesson": "被骗后也不要向陌生追款人支付保证金或解冻费。",
+            "loss": 500,
+            "privacy": 0
+          }
+        ]
+      },
+      "pressure": {
+        "text": "资金已冻结，再付 1500 元激活就到账。",
+        "choices": [
+          {
+            "id": "stop",
+            "text": "停止操作，保存证据并寻求官方帮助",
+            "next": "recovered",
+            "lesson": "已经投入的成本不该成为继续损失的理由。",
+            "loss": 0,
+            "privacy": 0
+          },
+          {
+            "id": "more",
+            "text": "追加 1500 元",
+            "next": "loss",
+            "lesson": "被骗后也不要向陌生追款人支付保证金或解冻费。",
+            "loss": 1500,
+            "privacy": 0
+          }
+        ]
+      }
+    },
+    "clues": [
+      {
+        "text": "声称有内部追回渠道",
+        "why": "无法独立核验的关系与技术承诺不可信。"
+      },
+      {
+        "text": "保证追回并预收费用",
+        "why": "没有人能凭聊天保证资金追回。"
+      },
+      {
+        "text": "展示其他人的追回案例",
+        "why": "案例截图可能伪造，不能证明服务可靠。"
+      }
+    ],
+    "lesson": "被骗后也不要向陌生追款人支付保证金或解冻费。",
+    "transfer": {
+      "question": "追款者发来“已冻结资金”的截图，要求最后再付一笔。怎么办？",
+      "options": [
+        "停止付款，通过警方和银行官方渠道处理",
+        "截图证明追回了，继续付",
+        "要求语音承诺后付款"
+      ],
+      "answer": 0,
+      "explanation": "截图和承诺不构成可靠追回保证，避免二次损失。"
+    }
+  }
+]

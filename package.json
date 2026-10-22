@@ -1,0 +1,1 @@
+{"name":"unscam-lab","version":"1.0.0","private":true,"type":"module","engines":{"node":">=22"},"scripts":{"start":"node --env-file-if-exists=.env server/index.mjs","test":"node --test tests/*.test.mjs","check":"node --check public/app.js && node --check server/index.mjs"}}
